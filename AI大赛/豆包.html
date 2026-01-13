@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>哲学抽签卡片（日月星辰版）</title>
+    <style>
+        /* 1. 日月星辰全屏背景 */
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(180deg, #0a0e27 0%, #1a2346 50%, #2d3766 100%);
+            overflow-x: hidden;
+            position: relative;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        /* 星星动画 */
+        .star {
+            position: absolute;
+            background: #ffffff;
+            border-radius: 50%;
+            animation: twinkle infinite alternate;
+            z-index: 0;
+        }
+        /* 月亮装饰 */
+        .moon {
+            position: absolute;
+            top: 10%;
+            right: 15%;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(#f8e8a6, #f0d870);
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(248, 222, 134, 0.8);
+            z-index: 0;
+        }
+        .moon::before {
+            content: "";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 70px;
+            height: 70px;
+            background: #0a0e27;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        /* 星辰渐变层 */
+        .star-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50 L55 50 L55 55 L50 55 Z' fill='%23ffffff' opacity='0.3'/%3E%3C/svg%3E");
+            background-size: 200px;
+            z-index: 0;
+        }
+        @keyframes twinkle {
+            0% { opacity: 0.3; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* 2. 核心样式（保留原有功能，增加分类特效） */
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            text-align: center;
+            position: relative;
+            z-index: 1; /* 高于背景 */
+        }
+        #draw-card-btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #42b983;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(66, 185, 131, 0.4);
+            transition: all 0.3s ease;
+        }
+        #draw-card-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(66, 185, 131, 0.6);
+        }
+        #draw-card-btn:disabled {
+            background-color: #9ccc65;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .card-placeholder, #result-card {
+            width: 300px;
+            height: 400px;
+            margin: 0 auto;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            color: #f5f5f5;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        /* 统一显隐控制类 */
+        .hidden {
+            display: none !important;
+        }
+        .show {
+            display: flex !important;
+        }
+        #loading-text {
+            font-size: 18px;
+            color: #c9d8ff;
+            margin: 20px 0;
+            display: none;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 0 10px rgba(201, 216, 255, 0.5);
+        }
+        #card-graphic {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            position: relative;
+            z-index: 1;
+        }
+        #card-content {
+            padding: 0 20px;
+            font-size: 16px;
+            color: #f5f5f5;
+            line-height: 1.8;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+        /* 洗牌动画 */
+        @keyframes cardShuffle {
+            0% { transform: translateX(-5px) rotate(-2deg); }
+            50% { transform: translateX(5px) rotate(2deg); }
+            100% { transform: translateX(-5px) rotate(-2deg); }
+        }
+
+        /* 3. 5类答案专属视觉特效 */
+        /* 希望类（星光飘落） */
+        .effect-hope #card-graphic {
+            box-shadow: 0 0 20px rgba(248, 213, 134, 0.8), 0 0 40px rgba(248, 213, 134, 0.5);
+        }
+        .effect-hope::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 2 L12 6 L16 6 L13 9 L15 13 L10 11 L5 13 L7 9 L4 6 L8 6 Z' fill='%23f8d586' opacity='0.6'/%3E%3C/svg%3E");
+            animation: starFall 8s infinite linear;
+            opacity: 0.7;
+            border-radius: 16px;
+            z-index: 0;
+        }
+        @keyframes starFall {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100px; }
+        }
+
+        /* 等待类（月光朦胧） */
+        .effect-wait #card-graphic {
+            box-shadow: 0 0 20px rgba(201, 216, 255, 0.8), 0 0 40px rgba(201, 216, 255, 0.5);
+        }
+        .effect-wait::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 30%, rgba(201, 216, 255, 0.3) 0%, rgba(201, 216, 255, 0) 70%);
+            animation: moonGlow 4s infinite alternate;
+            border-radius: 16px;
+            z-index: 0;
+        }
+        @keyframes moonGlow {
+            0% { opacity: 0.5; }
+            100% { opacity: 0.8; }
+        }
+
+        /* 行动类（箭头冲刺） */
+        .effect-action #card-graphic {
+            box-shadow: 0 0 20px rgba(144, 224, 160, 0.8), 0 0 40px rgba(144, 224, 160, 0.5);
+        }
+        .effect-action::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='15' height='15' viewBox='0 0 15 15' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7.5 2 L12 7.5 L7.5 13 L9 7.5 L7.5 2 Z' fill='%2390e0a0' opacity='0.7'/%3E%3C/svg%3E");
+            animation: arrowDash 2s infinite linear;
+            opacity: 0.7;
+            border-radius: 16px;
+            z-index: 0;
+        }
+        @keyframes arrowDash {
+            0% { background-position: 0 0; }
+            100% { background-position: 50px 0; }
+        }
+
+        /* 警示类（红光闪烁） */
+        .effect-warn #card-graphic {
+            box-shadow: 0 0 20px rgba(255, 154, 154, 0.8), 0 0 40px rgba(255, 154, 154, 0.5);
+            animation: warnFlash 1s infinite alternate;
+        }
+        .effect-warn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 154, 154, 0.2);
+            animation: warnPulse 2s infinite alternate;
+            border-radius: 16px;
+            z-index: 0;
+        }
+        @keyframes warnFlash {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        @keyframes warnPulse {
+            0% { transform: scale(1); opacity: 0.2; }
+            100% { transform: scale(1.05); opacity: 0.4; }
+        }
+
+        /* 转变类（蝴蝶环绕） */
+        .effect-change #card-graphic {
+            box-shadow: 0 0 20px rgba(216, 181, 255, 0.8), 0 0 40px rgba(216, 181, 255, 0.5);
+        }
+        .effect-change::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 5 C15 5 18 10 10 15 C2 10 5 5 10 5 Z' fill='%23d8b5ff' opacity='0.7'/%3E%3C/svg%3E");
+            animation: butterflyCircle 6s infinite linear;
+            opacity: 0.7;
+            border-radius: 16px;
+            z-index: 0;
+        }
+        @keyframes butterflyCircle {
+            0% { transform: rotate(0deg); background-position: 0 0; }
+            100% { transform: rotate(360deg); background-position: 0 0; }
+        }
+
+        /* 结果卡片初始隐藏 */
+        #result-card {
+            display: none;
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <!-- 日月星辰背景元素 -->
+    <div class="moon"></div>
+    <div class="star-layer"></div>
+
+    <div class="container">
+        <button id="draw-card-btn">抽取哲学语录</button>
+        <div id="card-placeholder" class="card-placeholder">
+            点击按钮获取你的哲学启示
+        </div>
+        <div id="loading-text">正在探寻智慧...</div>
+        <div id="result-card" class="card-placeholder">
+            <div id="card-graphic">
+                <svg id="graphic-svg" width="60" height="60" viewBox="0 0 100 100"></svg>
+            </div>
+            <div id="card-content"></div>
+        </div>
+    </div>
+
+    <!-- 5类专属音频元素 -->
+    <audio id="audio-hope" src="./audio/philosophy-hope.mp3" preload="none">
+        <source src="./audio/philosophy-hope.ogg" type="audio/ogg">
+    </audio>
+    <audio id="audio-wait" src="./audio/philosophy-wait.mp3" preload="none">
+        <source src="./audio/philosophy-wait.ogg" type="audio/ogg">
+    </audio>
+    <audio id="audio-action" src="./audio/philosophy-action.mp3" preload="none">
+        <source src="./audio/philosophy-action.ogg" type="audio/ogg">
+    </audio>
+    <audio id="audio-warn" src="./audio/philosophy-warn.mp3" preload="none">
+        <source src="./audio/philosophy-warn.ogg" type="audio/ogg">
+    </audio>
+    <audio id="audio-change" src="./audio/philosophy-change.mp3" preload="none">
+        <source src="./audio/philosophy-change.ogg" type="audio/ogg">
+    </audio>
+    <!-- 洗牌辅助音效 -->
+    <audio id="audio-shuffle" src="./audio/philosophy-shuffle.mp3" preload="none"></audio>
+
+    <script>
+        // 1. 初始化日月星辰背景（生成随机星星）
+        window.onload = function() {
+            createStars();
+            console.log("日月星辰背景初始化完成");
+        };
+
+        function createStars() {
+            const starCount = 150;
+            const body = document.querySelector('body');
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                // 随机位置、大小、动画时长
+                const size = Math.random() * 3 + 1;
+                const top = Math.random() * 100;
+                const left = Math.random() * 100;
+                const duration = Math.random() * 5 + 3;
+                // 设置样式
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.top = `${top}%`;
+                star.style.left = `${left}%`;
+                star.style.animationDuration = `${duration}s`;
+                body.appendChild(star);
+            }
+        }
+
+        // 2. 获取DOM元素
+        const drawCardBtn = document.getElementById('draw-card-btn');
+        const cardPlaceholder = document.getElementById('card-placeholder');
+        const loadingText = document.getElementById('loading-text');
+        const resultCard = document.getElementById('result-card');
+        const cardGraphic = document.getElementById('card-graphic');
+        const graphicSvg = document.getElementById('graphic-svg');
+        const cardContent = document.getElementById('card-content');
+        const audioHope = document.getElementById('audio-hope');
+        const audioWait = document.getElementById('audio-wait');
+        const audioAction = document.getElementById('audio-action');
+        const audioWarn = document.getElementById('audio-warn');
+        const audioChange = document.getElementById('audio-change');
+        const audioShuffle = document.getElementById('audio-shuffle');
+
+        // 3. 50条哲学语录答案库（5类，每类10条）
+        const philosophyLibrary = [
+            // 第一类：希望/鼓励类（star，10条）
+            { 
+                content: "人生的本质是诗意的，人应该诗意地栖居在大地上。—— 海德格尔", 
+                svg: "<path d='M50,10 L60,35 L85,35 L65,50 L75,75 L50,60 L25,75 L35,50 L15,35 L40,35 Z' fill='currentColor' />",
+                color: "#f8d586",
+                graphicBg: "rgba(248, 213, 134, 0.15)",
+                type: "hope",
+                effectClass: "effect-hope"
+            },
+            { 
+                content: "世界上只有一种真正的英雄主义，就是在认清生活的真相后依然热爱生活。—— 罗曼·罗兰", 
+                svg: "<path d='M50,10 L60,35 L85,35 L65,50 L75,75 L50,60 L25,75 L35,50 L15,35 L40,35 Z' fill='currentColor' />",
+                color: "#f8d586",
+                graphicBg: "rgba(248, 213, 134, 0.15)",
+                type: "hope",
+                effectClass: "effect-hope"
+            },
+            { 
+                content: "道生一，一生二，二生三，三生万物。—— 老子《道德经》", 
+                svg: "<path d='M50,10 L60,35 L85,35 L65,50 L75,75 L50,60 L25,75 L35,50 L15,35 L40,35 Z' fill='currentColor' />",
+                color: "#f8d586",
+                graphicBg: "rgba(248, 213, 134, 0.15)",
+                type: "hope",
+                effectClass: "effect-hope"
+            },
+            { 
+                content: "人是万物的尺度，是存在者存在的尺度，也是不存在者不存在的尺度。—— 普罗泰戈拉", 
+                svg: "<path d='M50,10 L60,35 L85,35 L65,50 L75,75 L50,60 L25,75 L35,50 L15,35 L40,35 Z' fill='currentColor' />",
+                color: "#f8d586",
+                graphicBg: "rgba(248, 213, 134, 0.15)",
+                type: "hope",
+                effectClass: "effect-hope"
+            },
+            { 
+                content: "存在先于本质。—— 萨特", 
+                svg: "<path d='M50,10 L60,35 L85,35 L65,50 L75,75 L50,60 L25,75 L35,50 L15,35 L40,35 Z' fill='currentColor' />",
+                color: "#f8d586",
+                graphicBg: "rgba(248, 213, 134, 0.15)",
+                type: "hope",
+                effectClass: "effect-hope"
+            },
+            { 
+                content: "知者不惑，仁者不忧，勇者不惧。—— 孔子《论语》", 
+                svg: "<path d='M50,10 L60,35 L85,35 L65,50 L75,75 L50,60 L25,75 L35,50 L15,35 L40,35 Z' fill='currentColor' />",
+                color: "#f8d586",
+                graphicBg: "rgba(248, 213, 134, 0.15)",
+                type: "hope",
+                effectClass: "effect-hope"
+            },
+            { 
+                content: "太阳每天都是新的。—— 赫拉克利特", 
+                svg: "<path d='M50,10 L60,35 L85,35 L65,50 L75,75 L50,60 L25,75 L35,50 L15,35 L40,35 Z' fill='currentColor' />",
+                color: "#f8d586",
+                graphicBg: "rgba(248, 213, 134, 0.15)",
+                type: "hope",
+                effectClass: "effect-hope"
+            },
+            { 
+                content: "凡存在的皆合理，凡合理的皆存在。—— 黑格尔", 
+                svg: "<path d='M50,10 L60,35 L85,35 L65,50 L75,75 L50,60 L25,75 L35,50 L15,35 L40,35 Z' fill='currentColor' />",
+                color: "#f8d586",
+                graphicBg: "rgba(248, 213, 134, 0.15)",
+                type: "hope",
+                effectClass: "effect-hope"
+            },
+            { 
+                content: "每一个不曾起舞的日子，都是对生命的辜负。—— 尼采", 
+                svg: "<path d='M50,10 L60,35 L85,35 L65,50 L75,75 L50,60 L25,75 L35,50 L15,35 L40,35 Z' fill='currentColor' />",
+                color: "#f8d586",
+                graphicBg: "rgba(248, 213, 134, 0.15)",
+                type: "hope",
+                effectClass: "effect-hope"
+            },
+            { 
+                content: "上善若水，水善利万物而不争。—— 老子《道德经》", 
+                svg: "<path d='M50,10 L60,35 L85,35 L65,50 L75,75 L50,60 L25,75 L35,50 L15,35 L40,35 Z' fill='currentColor' />",
+                color: "#f8d586",
+                graphicBg: "rgba(248, 213, 134, 0.15)",
+                type: "hope",
+                effectClass: "effect-hope"
+            },
+
+            // 第二类：等待/沉静类（moon，10条）
+            { 
+                content: "静而后能安，安而后能虑，虑而后能得。—— 《大学》", 
+                svg: "<path d='M70,30 C70,15 55,5 40,5 C20,5 5,20 5,40 C5,60 25,75 40,75 C55,75 70,65 70,50 C70,45 70,40 70,30 Z M60,40 C60,45 55,50 50,50 C45,50 40,45 40,40 C40,35 45,30 50,30 C55,30 60,35 60,40 Z' fill='currentColor' />",
+                color: "#c9d8ff",
+                graphicBg: "rgba(201, 216, 255, 0.15)",
+                type: "wait",
+                effectClass: "effect-wait"
+            },
+            { 
+                content: "夫唯不争，故天下莫能与之争。—— 老子《道德经》", 
+                svg: "<path d='M70,30 C70,15 55,5 40,5 C20,5 5,20 5,40 C5,60 25,75 40,75 C55,75 70,65 70,50 C70,45 70,40 70,30 Z M60,40 C60,45 55,50 50,50 C45,50 40,45 40,40 C40,35 45,30 50,30 C55,30 60,35 60,40 Z' fill='currentColor' />",
+                color: "#c9d8ff",
+                graphicBg: "rgba(201, 216, 255, 0.15)",
+                type: "wait",
+                effectClass: "effect-wait"
+            },
+            { 
+                content: "耐心是一切聪明才智的基础。—— 柏拉图", 
+                svg: "<path d='M70,30 C70,15 55,5 40,5 C20,5 5,20 5,40 C5,60 25,75 40,75 C55,75 70,65 70,50 C70,45 70,40 70,30 Z M60,40 C60,45 55,50 50,50 C45,50 40,45 40,40 C40,35 45,30 50,30 C55,30 60,35 60,40 Z' fill='currentColor' />",
+                color: "#c9d8ff",
+                graphicBg: "rgba(201, 216, 255, 0.15)",
+                type: "wait",
+                effectClass: "effect-wait"
+            },
+            { 
+                content: "万物皆流，无物常驻。—— 赫拉克利特", 
+                svg: "<path d='M70,30 C70,15 55,5 40,5 C20,5 5,20 5,40 C5,60 25,75 40,75 C55,75 70,65 70,50 C70,45 70,40 70,30 Z M60,40 C60,45 55,50 50,50 C45,50 40,45 40,40 C40,35 45,30 50,30 C55,30 60,35 60,40 Z' fill='currentColor' />",
+                color: "#c9d8ff",
+                graphicBg: "rgba(201, 216, 255, 0.15)",
+                type: "wait",
+                effectClass: "effect-wait"
+            },
+            { 
+                content: "君子欲讷于言而敏于行。—— 孔子《论语》", 
+                svg: "<path d='M70,30 C70,15 55,5 40,5 C20,5 5,20 5,40 C5,60 25,75 40,75 C55,75 70,65 70,50 C70,45 70,40 70,30 Z M60,40 C60,45 55,50 50,50 C45,50 40,45 40,40 C40,35 45,30 50,30 C55,30 60,35 60,40 Z' fill='currentColor' />",
+                color: "#c9d8ff",
+                graphicBg: "rgba(201, 216, 255, 0.15)",
+                type: "wait",
+                effectClass: "effect-wait"
+            },
+            { 
+                content: "存在即被感知。—— 贝克莱", 
+                svg: "<path d='M70,30 C70,15 55,5 40,5 C20,5 5,20 5,40 C5,60 25,75 40,75 C55,75 70,65 70,50 C70,45 70,40 70,30 Z M60,40 C60,45 55,50 50,50 C45,50 40,45 40,40 C40,35 45,30 50,30 C55,30 60,35 60,40 Z' fill='currentColor' />",
+                color: "#c9d8ff",
+                graphicBg: "rgba(201, 216, 255, 0.15)",
+                type: "wait",
+                effectClass: "effect-wait"
+            },
+            { 
+                content: "不以物喜，不以己悲。—— 范仲淹《岳阳楼记》", 
+                svg: "<path d='M70,30 C70,15 55,5 40,5 C20,5 5,20 5,40 C5,60 25,75 40,75 C55,75 70,65 70,50 C70,45 70,40 70,30 Z M60,40 C60,45 55,50 50,50 C45,50 40,45 40,40 C40,35 45,30 50,30 C55,30 60,35 60,40 Z' fill='currentColor' />",
+                color: "#c9d8ff",
+                graphicBg: "rgba(201, 216, 255, 0.15)",
+                type: "wait",
+                effectClass: "effect-wait"
+            },
+            { 
+                content: "他人即地狱。—— 萨特", 
+                svg: "<path d='M70,30 C70,15 55,5 40,5 C20,5 5,20 5,40 C5,60 25,75 40,75 C55,75 70,65 70,50 C70,45 70,40 70,30 Z M60,40 C60,45 55,50 50,50 C45,50 40,45 40,40 C40,35 45,30 50,30 C55,30 60,35 60,40 Z' fill='currentColor' />",
+                color: "#c9d8ff",
+                graphicBg: "rgba(201, 216, 255, 0.15)",
+                type: "wait",
+                effectClass: "effect-wait"
+            },
+            { 
+                content: "欲速则不达，见小利则大事不成。—— 孔子《论语》", 
+                svg: "<path d='M70,30 C70,15 55,5 40,5 C20,5 5,20 5,40 C5,60 25,75 40,75 C55,75 70,65 70,50 C70,45 70,40 70,30 Z M60,40 C60,45 55,50 50,50 C45,50 40,45 40,40 C40,35 45,30 50,30 C55,30 60,35 60,40 Z' fill='currentColor' />",
+                color: "#c9d8ff",
+                graphicBg: "rgba(201, 216, 255, 0.15)",
+                type: "wait",
+                effectClass: "effect-wait"
+            },
+            { 
+                content: "世界是我的表象。—— 叔本华", 
+                svg: "<path d='M70,30 C70,15 55,5 40,5 C20,5 5,20 5,40 C5,60 25,75 40,75 C55,75 70,65 70,50 C70,45 70,40 70,30 Z M60,40 C60,45 55,50 50,50 C45,50 40,45 40,40 C40,35 45,30 50,30 C55,30 60,35 60,40 Z' fill='currentColor' />",
+                color: "#c9d8ff",
+                graphicBg: "rgba(201, 216, 255, 0.15)",
+                type: "wait",
+                effectClass: "effect-wait"
+            },
+
+            // 第三类：行动/前行类（arrow，10条）
+            { 
+                content: "学而时习之，不亦说乎。—— 孔子《论语》", 
+                svg: "<path d='M50,15 L80,45 L50,75 L60,45 L50,15 Z M30,30 L50,45 L30,60 L35,45 L30,30 Z' fill='currentColor' />",
+                color: "#90e0a0",
+                graphicBg: "rgba(144, 224, 160, 0.15)",
+                type: "action",
+                effectClass: "effect-action"
+            },
+            { 
+                content: "实践是检验真理的唯一标准。—— 马克思主义哲学", 
+                svg: "<path d='M50,15 L80,45 L50,75 L60,45 L50,15 Z M30,30 L50,45 L30,60 L35,45 L30,30 Z' fill='currentColor' />",
+                color: "#90e0a0",
+                graphicBg: "rgba(144, 224, 160, 0.15)",
+                type: "action",
+                effectClass: "effect-action"
+            },
+            { 
+                content: "意志是世界的物自体，是世界的内在内容，是世界的本质。—— 叔本华", 
+                svg: "<path d='M50,15 L80,45 L50,75 L60,45 L50,15 Z M30,30 L50,45 L30,60 L35,45 L30,30 Z' fill='currentColor' />",
+                color: "#90e0a0",
+                graphicBg: "rgba(144, 224, 160, 0.15)",
+                type: "action",
+                effectClass: "effect-action"
+            },
+            { 
+                content: "天行健，君子以自强不息。—— 《周易》", 
+                svg: "<path d='M50,15 L80,45 L50,75 L60,45 L50,15 Z M30,30 L50,45 L30,60 L35,45 L30,30 Z' fill='currentColor' />",
+                color: "#90e0a0",
+                graphicBg: "rgba(144, 224, 160, 0.15)",
+                type: "action",
+                effectClass: "effect-action"
+            },
+            { 
+                content: "我思故我在。—— 笛卡尔", 
+                svg: "<path d='M50,15 L80,45 L50,75 L60,45 L50,15 Z M30,30 L50,45 L30,60 L35,45 L30,30 Z' fill='currentColor' />",
+                color: "#90e0a0",
+                graphicBg: "rgba(144, 224, 160, 0.15)",
+                type: "action",
+                effectClass: "effect-action"
+            },
+            { 
+                content: "路漫漫其修远兮，吾将上下而求索。—— 屈原《离骚》", 
+                svg: "<path d='M50,15 L80,45 L50,75 L60,45 L50,15 Z M30,30 L50,45 L30,60 L35,45 L30,30 Z' fill='currentColor' />",
+                color: "#90e0a0",
+                graphicBg: "rgba(144, 224, 160, 0.15)",
+                type: "action",
+                effectClass: "effect-action"
+            },
+            { 
+                content: "认识你自己。—— 苏格拉底", 
+                svg: "<path d='M50,15 L80,45 L50,75 L60,45 L50,15 Z M30,30 L50,45 L30,60 L35,45 L30,30 Z' fill='currentColor' />",
+                color: "#90e0a0",
+                graphicBg: "rgba(144, 224, 160, 0.15)",
+                type: "action",
+                effectClass: "effect-action"
+            },
+            { 
+                content: "为天地立心，为生民立命，为往圣继绝学，为万世开太平。—— 张载", 
+                svg: "<path d='M50,15 L80,45 L50,75 L60,45 L50,15 Z M30,30 L50,45 L30,60 L35,45 L30,30 Z' fill='currentColor' />",
+                color: "#90e0a0",
+                graphicBg: "rgba(144, 224, 160, 0.15)",
+                type: "action",
+                effectClass: "effect-action"
+            },
+            { 
+                content: "人是目的，而非手段。—— 康德", 
+                svg: "<path d='M50,15 L80,45 L50,75 L60,45 L50,15 Z M30,30 L50,45 L30,60 L35,45 L30,30 Z' fill='currentColor' />",
+                color: "#90e0a0",
+                graphicBg: "rgba(144, 224, 160, 0.15)",
+                type: "action",
+                effectClass: "effect-action"
+            },
+            { 
+                content: "生命在于运动。—— 伏尔泰", 
+                svg: "<path d='M50,15 L80,45 L50,75 L60,45 L50,15 Z M30,30 L50,45 L30,60 L35,45 L30,30 Z' fill='currentColor' />",
+                color: "#90e0a0",
+                graphicBg: "rgba(144, 224, 160, 0.15)",
+                type: "action",
+                effectClass: "effect-action"
+            },
+
+            // 第四类：警示/反思类（warn，10条）
+            { 
+                content: "过而不改，是谓过矣。—— 孔子《论语》", 
+                svg: "<path d='M50,10 L90,40 L90,60 L50,90 L10,60 L10,40 Z M50,30 L50,50 M50,60 L50,70' stroke='currentColor' stroke-width='6' stroke-linecap='round' fill='none' />",
+                color: "#ff9a9a",
+                graphicBg: "rgba(255, 154, 154, 0.15)",
+                type: "warn",
+                effectClass: "effect-warn"
+            },
+            { 
+                content: "人不能两次踏入同一条河流。—— 赫拉克利特", 
+                svg: "<path d='M50,10 L90,40 L90,60 L50,90 L10,60 L10,40 Z M50,30 L50,50 M50,60 L50,70' stroke='currentColor' stroke-width='6' stroke-linecap='round' fill='none' />",
+                color: "#ff9a9a",
+                graphicBg: "rgba(255, 154, 154, 0.15)",
+                type: "warn",
+                effectClass: "effect-warn"
+            },
+            { 
+                content: "无知即罪恶。—— 苏格拉底", 
+                svg: "<path d='M50,10 L90,40 L90,60 L50,90 L10,60 L10,40 Z M50,30 L50,50 M50,60 L50,70' stroke='currentColor' stroke-width='6' stroke-linecap='round' fill='none' />",
+                color: "#ff9a9a",
+                graphicBg: "rgba(255, 154, 154, 0.15)",
+                type: "warn",
+                effectClass: "effect-warn"
+            },
+            { 
+                content: "君子之交淡如水，小人之交甘若醴。—— 庄子《山木》", 
+                svg: "<path d='M50,10 L90,40 L90,60 L50,90 L10,60 L10,40 Z M50,30 L50,50 M50,60 L50,70' stroke='currentColor' stroke-width='6' stroke-linecap='round' fill='none' />",
+                color: "#ff9a9a",
+                graphicBg: "rgba(255, 154, 154, 0.15)",
+                type: "warn",
+                effectClass: "effect-warn"
+            },
+            { 
+                content: "存在主义的核心是自由选择。—— 萨特", 
+                svg: "<path d='M50,10 L90,40 L90,60 L50,90 L10,60 L10,40 Z M50,30 L50,50 M50,60 L50,70' stroke='currentColor' stroke-width='6' stroke-linecap='round' fill='none' />",
+                color: "#ff9a9a",
+                graphicBg: "rgba(255, 154, 154, 0.15)",
+                type: "warn",
+                effectClass: "effect-warn"
+            },
+            { 
+                content: "祸兮福之所倚，福兮祸之所伏。—— 老子《道德经》", 
+                svg: "<path d='M50,10 L90,40 L90,60 L50,90 L10,60 L10,40 Z M50,30 L50,50 M50,60 L50,70' stroke='currentColor' stroke-width='6' stroke-linecap='round' fill='none' />",
+                color: "#ff9a9a",
+                graphicBg: "rgba(255, 154, 154, 0.15)",
+                type: "warn",
+                effectClass: "effect-warn"
+            },
+            { 
+                content: "平庸之恶，是不思考的恶。—— 阿伦特", 
+                svg: "<path d='M50,10 L90,40 L90,60 L50,90 L10,60 L10,40 Z M50,30 L50,50 M50,60 L50,70' stroke='currentColor' stroke-width='6' stroke-linecap='round' fill='none' />",
+                color: "#ff9a9a",
+                graphicBg: "rgba(255, 154, 154, 0.15)",
+                type: "warn",
+                effectClass: "effect-warn"
+            },
+            { 
+                content: "己所不欲，勿施于人。—— 孔子《论语》", 
+                svg: "<path d='M50,10 L90,40 L90,60 L50,90 L10,60 L10,40 Z M50,30 L50,50 M50,60 L50,70' stroke='currentColor' stroke-width='6' stroke-linecap='round' fill='none' />",
+                color: "#ff9a9a",
+                graphicBg: "rgba(255, 154, 154, 0.15)",
+                type: "warn",
+                effectClass: "effect-warn"
+            },
+            { 
+                content: "权力导致腐败，绝对权力导致绝对腐败。—— 阿克顿勋爵", 
+                svg: "<path d='M50,10 L90,40 L90,60 L50,90 L10,60 L10,40 Z M50,30 L50,50 M50,60 L50,70' stroke='currentColor' stroke-width='6' stroke-linecap='round' fill='none' />",
+                color: "#ff9a9a",
+                graphicBg: "rgba(255, 154, 154, 0.15)",
+                type: "warn",
+                effectClass: "effect-warn"
+            },
+            { 
+                content: "他人的意见对于我们的幸福并非必要。—— 叔本华", 
+                svg: "<path d='M50,10 L90,40 L90,60 L50,90 L10,60 L10,40 Z M50,30 L50,50 M50,60 L50,70' stroke='currentColor' stroke-width='6' stroke-linecap='round' fill='none' />",
+                color: "#ff9a9a",
+                graphicBg: "rgba(255, 154, 154, 0.15)",
+                type: "warn",
+                effectClass: "effect-warn"
+            },
+
+            // 第五类：转变/换角度类（change，10条）
+            { 
+                content: "横看成岭侧成峰，远近高低各不同。—— 苏轼《题西林壁》", 
+                svg: "<path d='M30,50 C30,30 50,20 50,20 C50,20 70,30 70,50 C70,70 50,80 50,80 C50,80 30,70 30,50 Z M45,40 C45,35 55,35 55,40 C55,45 45,45 45,40 Z' fill='currentColor' />",
+                color: "#d8b5ff",
+                graphicBg: "rgba(216, 181, 255, 0.15)",
+                type: "change",
+                effectClass: "effect-change"
+            },
+            { 
+                content: "塞翁失马，焉知非福。—— 《淮南子·人间训》", 
+                svg: "<path d='M30,50 C30,30 50,20 50,20 C50,20 70,30 70,50 C70,70 50,80 50,80 C50,80 30,70 30,50 Z M45,40 C45,35 55,35 55,40 C55,45 45,45 45,40 Z' fill='currentColor' />",
+                color: "#d8b5ff",
+                graphicBg: "rgba(216, 181, 255, 0.15)",
+                type: "change",
+                effectClass: "effect-change"
+            },
+            { 
+                content: "物竞天择，适者生存。—— 达尔文", 
+                svg: "<path d='M30,50 C30,30 50,20 50,20 C50,20 70,30 70,50 C70,70 50,80 50,80 C50,80 30,70 30,50 Z M45,40 C45,35 55,35 55,40 C55,45 45,45 45,40 Z' fill='currentColor' />",
+                color: "#d8b5ff",
+                graphicBg: "rgba(216, 181, 255, 0.15)",
+                type: "change",
+                effectClass: "effect-change"
+            },
+            { 
+                content: "庄子与惠子游于濠梁之上。—— 庄子《秋水》", 
+                svg: "<path d='M30,50 C30,30 50,20 50,20 C50,20 70,30 70,50 C70,70 50,80 50,80 C50,80 30,70 30,50 Z M45,40 C45,35 55,35 55,40 C55,45 45,45 45,40 Z' fill='currentColor' />",
+                color: "#d8b5ff",
+                graphicBg: "rgba(216, 181, 255, 0.15)",
+                type: "change",
+                effectClass: "effect-change"
+            },
+            { 
+                content: "一切历史都是当代史。—— 克罗齐", 
+                svg: "<path d='M30,50 C30,30 50,20 50,20 C50,20 70,30 70,50 C70,70 50,80 50,80 C50,80 30,70 30,50 Z M45,40 C45,35 55,35 55,40 C55,45 45,45 45,40 Z' fill='currentColor' />",
+                color: "#d8b5ff",
+                graphicBg: "rgba(216, 181, 255, 0.15)",
+                type: "change",
+                effectClass: "effect-change"
+            },
+            { 
+                content: "不识庐山真面目，只缘身在此山中。—— 苏轼《题西林壁》", 
+                svg: "<path d='M30,50 C30,30 50,20 50,20 C50,20 70,30 70,50 C70,70 50,80 50,80 C50,80 30,70 30,50 Z M45,40 C45,35 55,35 55,40 C55,45 45,45 45,40 Z' fill='currentColor' />",
+                color: "#d8b5ff",
+                graphicBg: "rgba(216, 181, 255, 0.15)",
+                type: "change",
+                effectClass: "effect-change"
+            },
+            { 
+                content: "真理是时间的女儿，不是权威的女儿。—— 伽利略", 
+                svg: "<path d='M30,50 C30,30 50,20 50,20 C50,20 70,30 70,50 C70,70 50,80 50,80 C50,80 30,70 30,50 Z M45,40 C45,35 55,35 55,40 C55,45 45,45 45,40 Z' fill='currentColor' />",
+                color: "#d8b5ff",
+                graphicBg: "rgba(216, 181, 255, 0.15)",
+                type: "change",
+                effectClass: "effect-change"
+            },
+            { 
+                content: "道可道，非常道；名可名，非常名。—— 老子《道德经》", 
+                svg: "<path d='M30,50 C30,30 50,20 50,20 C50,20 70,30 70,50 C70,70 50,80 50,80 C50,80 30,70 30,50 Z M45,40 C45,35 55,35 55,40 C55,45 45,45 45,40 Z' fill='currentColor' />",
+                color: "#d8b5ff",
+                graphicBg: "rgba(216, 181, 255, 0.15)",
+                type: "change",
+                effectClass: "effect-change"
+            },
+            { 
+                content: "世界的本质是永恒的活火。—— 赫拉克利特", 
+                svg: "<path d='M30,50 C30,30 50,20 50,20 C50,20 70,30 70,50 C70,70 50,80 50,80 C50,80 30,70 30,50 Z M45,40 C45,35 55,35 55,40 C55,45 45,45 45,40 Z' fill='currentColor' />",
+                color: "#d8b5ff",
+                graphicBg: "rgba(216, 181, 255, 0.15)",
+                type: "change",
+                effectClass: "effect-change"
+            },
+            { 
+                content: "换位思考，是理解他人的唯一途径。—— 马斯洛", 
+                svg: "<path d='M30,50 C30,30 50,20 50,20 C50,20 70,30 70,50 C70,70 50,80 50,80 C50,80 30,70 30,50 Z M45,40 C45,35 55,35 55,40 C55,45 45,45 45,40 Z' fill='currentColor' />",
+                color: "#d8b5ff",
+                graphicBg: "rgba(216, 181, 255, 0.15)",
+                type: "change",
+                effectClass: "effect-change"
+            }
+        ];
+
+        // 4. 绑定按钮点击事件
+        drawCardBtn.addEventListener('click', handleDrawCard);
+        console.log("哲学抽卡事件已绑定");
+
+        // 5. 抽卡核心处理函数（整合特效与音效）
+        function handleDrawCard() {
+            console.log("哲学抽卡函数开始执行");
+            // 禁用按钮
+            drawCardBtn.disabled = true;
+            // 播放洗牌音效
+            playShuffleAudio();
+            // 切换显隐状态
+            cardPlaceholder.classList.add('hidden');
+            loadingText.classList.add('show');
+            resultCard.classList.remove('show');
+            resultCard.style.animation = 'cardShuffle 0.5s infinite';
+            // 移除所有旧特效类
+            removeAllEffectClasses();
+
+            // 模拟加载延迟
+            setTimeout(() => {
+                console.log("智慧探寻完成，开始渲染");
+                // 隐藏加载状态
+                loadingText.classList.remove('show');
+                resultCard.style.animation = 'none';
+                // 随机选取语录
+                const randomIndex = Math.floor(Math.random() * philosophyLibrary.length);
+                const selectedPhilosophy = philosophyLibrary[randomIndex];
+                console.log("选中哲学语录：", selectedPhilosophy.content);
+                // 渲染卡片+添加专属特效
+                renderPhilosophyCard(selectedPhilosophy);
+                // 播放专属音效
+                playPhilosophyAudio(selectedPhilosophy.type);
+                // 显示结果卡片
+                setTimeout(() => {
+                    resultCard.classList.add('show');
+                    drawCardBtn.disabled = false;
+                    console.log("哲学卡片已显示，按钮恢复可用");
+                }, 800);
+            }, 3000);
+        }
+
+        // 6. 辅助函数：移除所有特效类
+        function removeAllEffectClasses() {
+            resultCard.classList.remove('effect-hope', 'effect-wait', 'effect-action', 'effect-warn', 'effect-change');
+        }
+
+        // 7. 渲染哲学卡片（添加专属特效）
+        function renderPhilosophyCard(philosophy) {
+            // 添加专属特效类
+            removeAllEffectClasses();
+            resultCard.classList.add(philosophy.effectClass);
+            // 渲染基础内容
+            graphicSvg.innerHTML = philosophy.svg;
+            cardGraphic.style.color = philosophy.color;
+            cardGraphic.style.background = philosophy.graphicBg;
+            cardContent.textContent = philosophy.content;
+        }
+
+        // 8. 播放洗牌音效
+        function playShuffleAudio() {
+            try {
+                audioShuffle.pause();
+                audioShuffle.currentTime = 0;
+                audioShuffle.play();
+            } catch (err) {
+                console.log("洗牌音效播放失败（无本地文件，可忽略）：", err);
+            }
+        }
+
+        // 9. 播放专属哲学音效
+        function playPhilosophyAudio(type) {
+            // 暂停所有音效
+            [audioHope, audioWait, audioAction, audioWarn, audioChange, audioShuffle].forEach(audio => {
+                audio.pause();
+                audio.currentTime = 0;
+            });
+            // 播放对应音效
+            try {
+                switch (type) {
+                    case 'hope':
+                        audioHope.play();
+                        break;
+                    case 'wait':
+                        audioWait.play();
+                        break;
+                    case 'action':
+                        audioAction.play();
+                        break;
+                    case 'warn':
+                        audioWarn.play();
+                        break;
+                    case 'change':
+                        audioChange.play();
+                        break;
+                    default:
+                        break;
+                }
+            } catch (err) {
+                console.log(`【${type}】类音效播放失败（无本地文件，可忽略）：`, err);
+            }
+        }
+    </script>
+</body>
+</html>

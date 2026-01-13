@@ -1,0 +1,1065 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>新年祝福</title>
+  <style>
+    :root{
+      --bg1:#f4f4f5;
+      --bg2:#e5e7eb;
+      --text:#0f172a;
+      --muted:#6b7280;
+      --caption-size:28px;
+      --caption-shadow:0 3px 10px rgba(96,62,10,.45);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;width:100%}
+    body{
+      margin:0;
+      font-family:"YouYuan","Comic Sans MS","STKaiti","KaiTi","Microsoft YaHei",sans-serif;
+      color:var(--text);
+      background:linear-gradient(180deg, var(--bg1), var(--bg2));
+      min-height:100vh;
+      min-height:100svh;
+      overflow:hidden;
+    }
+
+    .scene{
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100vh;
+      height:100svh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      opacity:0;
+      visibility:hidden;
+      transform:translateY(14px);
+      transition:opacity 1.2s ease, transform 1.2s ease;
+      pointer-events:none;
+      padding:28px 18px;
+    }
+    .scene.active{
+      opacity:1;
+      visibility:visible;
+      transform:translateY(0);
+      pointer-events:auto;
+    }
+    .scene.hidden{display:none}
+    .scene.exiting{
+      pointer-events:none;
+    }
+    .scene.exiting .panel,
+    .scene.exiting .scene-3-wrap,
+    .scene.exiting .message-card{
+      animation:blowAway 2.8s ease forwards;
+    }
+
+    .scene.light{
+      color:#1f2937;
+    }
+    .scene.light::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:linear-gradient(180deg, #f8fafc, #e5e7eb);
+      z-index:0;
+    }
+    .scene.light .message-card{z-index:1}
+
+    .scene.final{
+      position:fixed;
+    }
+    .scene.final::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:linear-gradient(180deg, #f4f4f5, #e5e7eb);
+      z-index:0;
+      transition:background 1.6s ease;
+    }
+    .scene.final.red::before{
+      background:linear-gradient(180deg, #b91c1c, #ef4444);
+    }
+    .scene.final .scene-3-wrap{z-index:2}
+
+    .fireworks{
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      pointer-events:none;
+      opacity:0;
+      transition:opacity .6s ease;
+      z-index:1;
+      mix-blend-mode:screen;
+    }
+    .fireworks.show{opacity:1}
+
+    .scene.gray2025::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:linear-gradient(180deg, #f4f4f5, #e5e7eb);
+      z-index:0;
+    }
+    .scene.gray2025 .scene-3-wrap{z-index:1}
+
+    @keyframes blowAway{
+      to{
+        transform:translate(90px,-60px) rotate(7deg);
+        opacity:0;
+        filter:blur(7px);
+      }
+    }
+
+    .title{
+      font-size:clamp(28px,5.5vw,52px);
+      letter-spacing:6px;
+      margin:0 0 12px;
+      text-shadow:none;
+    }
+    .title.red{color:#ef4444}
+    .subtitle{
+      font-size:clamp(16px,3.2vw,22px);
+      color:var(--muted);
+      letter-spacing:2px;
+      margin:8px 0 28px;
+    }
+
+    .fade-line{
+      opacity:0;
+      filter:blur(2px);
+      transform:translateY(10px);
+      animation:fadeIn 2.8s ease forwards;
+    }
+    .fade-line.delay-1{animation-delay:1s}
+    .fade-line.delay-2{animation-delay:2s}
+    .fade-line.delay-3{animation-delay:3s}
+
+    @keyframes fadeIn{
+      to{opacity:1;filter:blur(0);transform:translateY(0)}
+    }
+
+    .panel{
+      background:transparent;
+      border:none;
+      border-radius:0;
+      padding:0;
+      box-shadow:none;
+      backdrop-filter:none;
+      max-width:620px;
+      width:min(94vw,620px);
+      text-align:center;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+
+    input{
+      font-family:inherit;
+      font-size:18px;
+      padding:10px 14px;
+      height:44px;
+      border-radius:12px;
+      border:1px solid rgba(15,23,42,.2);
+      background:#ffffff;
+      color:#0f172a;
+      min-width:220px;
+      outline:none;
+      text-align:center;
+    }
+
+    button{
+      font-family:inherit;
+      border:none;
+      cursor:pointer;
+    }
+
+    .action-btn{
+      margin-top:18px;
+      padding:10px 30px;
+      height:44px;
+      border-radius:28px;
+      background:#ffffff;
+      color:#1f2937;
+      font-weight:700;
+      box-shadow:0 10px 24px rgba(15,23,42,.08);
+      transition:transform .2s ease, box-shadow .2s ease;
+    }
+    .action-btn:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(15,23,42,.12)}
+
+    .hint{
+      font-size:14px;
+      color:#ef4444;
+      min-height:20px;
+      text-align:center;
+    }
+
+    .wish-block{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      align-items:center;
+      width:100%;
+    }
+    .wish-label{
+      font-size:clamp(20px,4.6vw,32px);
+      letter-spacing:3px;
+      color:#1f2937;
+    }
+    .wish-list{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:8px 10px;
+      width:100%;
+      max-width:520px;
+    }
+    .wish-all-row{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      margin-top:6px;
+    }
+
+    .wish-item{
+      border:none;
+      background:url("assets/button.png") no-repeat center/100% 100%;
+      color:#b91c1c;
+      border-radius:18px;
+      padding:8px 20px;
+      font-size:clamp(14px,3.2vw,20px);
+      letter-spacing:1px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      position:relative;
+      cursor:pointer;
+      transition:transform .2s ease, box-shadow .2s ease, filter .2s ease;
+      box-shadow:none;
+      margin-top:0;
+      font-weight:700;
+    }
+
+    .wish-item::after{
+      content:"?";
+      font-weight:700;
+      opacity:0;
+      color:#ef4444;
+      transition:opacity .2s ease;
+      position:absolute;
+      right:10px;
+      top:50%;
+      transform:translateY(-50%);
+      pointer-events:none;
+    }
+
+    .wish-item.active{
+      transform:translateY(-2px) scale(1.02);
+      box-shadow:0 12px 22px rgba(185,28,28,.28);
+      filter:saturate(1.05);
+    }
+    .wish-item.active::after{opacity:1}
+
+    .wish-picked{
+      font-size:14px;
+      color:#6b7280;
+      margin-top:6px;
+      text-align:center;
+    }
+
+    .name-card{
+      margin-top:14px;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:center;
+      align-items:center;
+      width:100%;
+    }
+
+    .name-card.horizontal{
+      flex-direction:row;
+    }
+    .name-card.horizontal .action-btn{
+      margin-top:0;
+    }
+
+    .message-card{
+      font-size:clamp(14px,4vw,18px);
+      padding:14px 18px;
+      background:#ffffff;
+      border-radius:16px;
+      color:#1f2937;
+      box-shadow:0 12px 28px rgba(15,23,42,.12);
+      animation:fadeIn 1.6s ease forwards;
+      opacity:0;
+      text-align:center;
+    }
+
+    .scene-3-wrap{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:16px;
+      width:100%;
+      position:relative;
+      padding:10px 0 28px;
+    }
+
+    .final-stack{
+      width:min(92vw,720px);
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      gap:10px;
+    }
+
+    .name-line{
+      font-size:clamp(18px,4vw,28px);
+      letter-spacing:2px;
+      color:#111827;
+      position:relative;
+      opacity:0;
+      animation:fadeIn 1.6s ease forwards;
+      text-align:left;
+      display:flex;
+      align-items:flex-end;
+      gap:6px;
+      line-height:1;
+    }
+
+    .wish-zh{
+      font-size:clamp(34px,7vw,56px);
+      color:#ffffff;
+      font-weight:900;
+      letter-spacing:2px;
+      opacity:0;
+      animation:flyIn 1.6s ease forwards 1.1s;
+      text-shadow:none;
+      background:#b91c1c;
+      padding:6px 8px 4px;
+      border:2px solid rgba(255,255,255,.65);
+      box-shadow:0 6px 16px rgba(0,0,0,.28) inset, 0 6px 18px rgba(0,0,0,.25);
+      border-radius:6px;
+    }
+
+    @keyframes flyIn{
+      0%{transform:translateX(-60px) translateY(-6px) scale(.85);opacity:0}
+      70%{opacity:1}
+      100%{transform:translateX(0) translateY(0) scale(1);opacity:1}
+    }
+
+    .digits-stage{
+      position:relative;
+      width:min(98vw,720px);
+      height:clamp(190px,36vh,280px);
+      display:grid;
+      place-items:center;
+      overflow:visible;
+    }
+
+    .digits{
+      position:absolute;
+      inset:0;
+      display:flex;
+      gap:32px;
+      justify-content:center;
+      align-items:center;
+      opacity:0;
+      transform:scale(.98);
+      transition:opacity 1s ease, transform 1s ease;
+      will-change:transform, opacity;
+      padding:6px 2px;
+    }
+    .digits.show{opacity:1;transform:scale(1)}
+    .digits.scatter-out .word,
+    .digits.scatter-in .word{
+      animation-delay:var(--ad,0s);
+    }
+    .digits.scatter-out .word{
+      animation:scatter 1.6s ease forwards;
+      animation-fill-mode:both;
+    }
+    .digits.scatter-in .word{
+      animation:gather 1.8s ease forwards;
+      animation-fill-mode:both;
+    }
+    .digits.scatter-cloud .word{
+      opacity:1;
+      transform:translate(calc(var(--dx) + var(--jx)), calc(var(--dy) + var(--jy))) rotate(calc(var(--rot) + var(--jr)));
+    }
+
+    .digit{
+      width:clamp(42px,10vw,110px);
+      height:clamp(80px,16vh,180px);
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      grid-template-rows:repeat(7,1fr);
+      gap:2px;
+      border-radius:12px;
+    }
+
+    .word-cell{
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .word{
+      font-family:"Kaiti SC","KaiTi","STKaiti","YouYuan","FangSong","SimSun",serif;
+      font-size:clamp(8px,1.15vw,11px);
+      font-weight:700;
+      opacity:.98;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-shadow:none;
+      transition:color .8s ease;
+      transform:translate(var(--jx,0), var(--jy,0)) rotate(var(--jr,0));
+      will-change:transform, opacity;
+      line-height:1.12;
+      letter-spacing:0;
+      white-space:nowrap;
+    }
+    .word.sub{
+      position:absolute;
+      top:54%;
+      font-size:0.82em;
+      opacity:.92;
+    }
+    .word.sub2{
+      position:absolute;
+      top:18%;
+      font-size:0.74em;
+      opacity:.8;
+    }
+
+    .digits.negative .word{color:#111827}
+    .digits.negative .word.alt{color:#b91c1c}
+
+    .digits.positive .word{
+      text-shadow:none;
+      filter:none;
+    }
+
+    @keyframes scatter{
+      to{
+        transform:translate(calc(var(--dx) + var(--jx)), calc(var(--dy) + var(--jy))) rotate(calc(var(--rot) + var(--jr)));
+        opacity:0;
+        filter:blur(2px);
+      }
+    }
+    @keyframes gather{
+      from{
+        transform:translate(calc(var(--dx) + var(--jx)), calc(var(--dy) + var(--jy))) rotate(calc(var(--rot) + var(--jr)));
+        opacity:1;
+        filter:none;
+      }
+      to{
+        transform:translate(var(--jx,0), var(--jy,0)) rotate(var(--jr,0));
+        opacity:1;
+        filter:none;
+      }
+    }
+    .caption{
+      font-size:var(--caption-size);
+      font-weight:900;
+      letter-spacing:4px;
+      color:#d6a74f;
+      text-shadow:var(--caption-shadow);
+      text-align:center;
+      line-height:1.08;
+      opacity:0;
+      transform:translateY(6px);
+      transition:opacity .8s ease, transform .8s ease;
+      visibility:hidden;
+    }
+    .caption.show{
+      opacity:1;
+      transform:translateY(0);
+      visibility:visible;
+    }
+    @supports (-webkit-background-clip:text){
+      .caption{
+        background:linear-gradient(120deg, #fff2b5, #f6d47a, #d69b3a, #f8e7a1);
+        -webkit-background-clip:text;
+        background-clip:text;
+        -webkit-text-fill-color:transparent;
+      }
+    }
+
+    @media (max-width:680px){
+      .panel{width:min(95vw,640px)}
+      .digit{gap:2px}
+      .digit{width:clamp(70px,20vw,75px)}
+      .digits{gap:clamp(12px,4vw,18px);justify-content:space-evenly}
+      .digits-stage{width:100vw}
+      .word{font-size:clamp(5px,1.4vw,7px)}
+
+    .wish-item{
+      border:none;
+      background:url("assets/button.png") no-repeat center/100% 100%;
+      color:#b91c1c;
+      border-radius:18px;
+      padding:8px 20px;
+      font-size:clamp(14px,3.2vw,20px);
+      letter-spacing:1px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      position:relative;
+      cursor:pointer;
+      transition:transform .2s ease, box-shadow .2s ease, filter .2s ease;
+      box-shadow:none;
+      margin-top:0;
+      font-weight:700;
+    }
+  </style>
+</head>
+<body>
+  <section class="scene active" id="scene1">
+    <div class="panel">
+      <h1 class="title red fade-line">新年快乐！</h1>
+      <div class="subtitle fade-line delay-1">在新的一年你有哪些美好愿景呢？</div>
+      <div class="wish-block fade-line delay-2">
+        <div class="wish-label">希望新一年</div>
+        <div class="wish-list" id="wishList">
+          <button class="wish-item" data-value="身体健康" type="button">身体健康</button>
+          <button class="wish-item" data-value="家人平安" type="button">家人平安</button>
+          <button class="wish-item" data-value="朋友常伴" type="button">朋友常伴</button>
+
+          <button class="wish-item" data-value="变得有钱" type="button">变得有钱</button>
+          <button class="wish-item" data-value="不再焦虑" type="button">不再焦虑</button>
+          <button class="wish-item" data-value="自由独立" type="button">自由独立</button>
+
+          <button class="wish-item" data-value="学业顺利" type="button">学业顺利</button>
+          <button class="wish-item" data-value="更有勇气" type="button">更有勇气</button>
+          <button class="wish-item" data-value="爱情甜蜜" type="button">爱情甜蜜</button>
+          
+          <button class="wish-item" data-value="平安喜乐" type="button">幸福常伴</button>
+          <button class="wish-item" data-value="好事连连" type="button">好事连连</button>
+          <button class="wish-item" data-value="万事顺意" type="button">万事顺意</button>
+
+        </div>
+        <div class="wish-all-row">
+          <button class="wish-item is-all" data-value="all" type="button">我全都要！</button>
+        </div>
+        <div class="wish-picked" id="wishPicked">未选择</div>
+      </div>
+      <button id="goScene2" class="action-btn fade-line delay-3" type="button">确定</button>
+      <div class="hint" id="wishHint"></div>
+    </div>
+  </section>
+
+  <section class="scene hidden" id="scene2">
+    <div class="panel">
+      <h2 class="title fade-line">许愿人是？</h2>
+      <div class="name-card horizontal fade-line delay-1">
+        <input id="nameInput" type="text" maxlength="10" placeholder="请输入你的名字" />
+        <button id="goScene3" class="action-btn" type="button">确定</button>
+      </div>
+      <div class="hint" id="nameHint"></div>
+    </div>
+  </section>
+
+  <section class="scene hidden light" id="sceneMessage">
+    <div class="message-card">其实这只是个仪式，程序里面只收录了你的名字...</div>
+  </section>
+
+  <section class="scene hidden final" id="scene3">
+    <canvas class="fireworks" id="fireworksCanvas"></canvas>
+    <div class="scene-3-wrap">
+      <div class="final-stack">
+        <div class="name-line" id="nameLine">
+          <span class="wish-zh">祝</span>
+          <span id="finalName">徐新雨</span>的
+        </div>
+        <div class="digits-stage">
+          <div class="digits negative" id="digits2025"></div>
+          <div class="digits positive" id="digits2026"></div>
+        </div>
+      </div>
+      <div class="caption" id="captionText">马到成功，心想事成！</div>
+    </div>
+  </section>
+
+  <script>
+    const scene1 = document.getElementById('scene1');
+    const scene2 = document.getElementById('scene2');
+    const scene3 = document.getElementById('scene3');
+    const sceneMessage = document.getElementById('sceneMessage');
+
+    const wishList = document.getElementById('wishList');
+    const wishHint = document.getElementById('wishHint');
+    const wishPicked = document.getElementById('wishPicked');
+    const nameHint = document.getElementById('nameHint');
+    const nameInput = document.getElementById('nameInput');
+
+    const digits2025 = document.getElementById('digits2025');
+    const digits2026 = document.getElementById('digits2026');
+
+    const captionEl = document.getElementById('captionText');
+
+    const fireworksCanvas = document.getElementById('fireworksCanvas');
+    const fireworksCtx = fireworksCanvas ? fireworksCanvas.getContext('2d') : null;
+    let fireworksRunning = false;
+    let fireworksTimer = null;
+    let fireworksFrame = null;
+    let fireworkParticles = [];
+    let audioCtx = null;
+    let fireworksBounds = { w: 0, h: 0, dpr: 1 };
+
+    const fireworkColors = ['#fbbf24','#f97316','#fb7185','#a78bfa','#22d3ee','#34d399','#f472b6'];
+
+    const wishButtons = Array.from(document.querySelectorAll('.wish-item'));
+    const allButton = document.querySelector('.is-all');
+    const wishOptions = wishButtons.filter(b => b !== allButton).map(b => b.dataset.value);
+
+    const formEndpoint = 'https://docs.google.com/forms/d/e/1FAIpQLSdti4-gZuSc16E0bz-i4ZtKdcOcdJ7C0XHie58KUJldhuOD6w/formResponse';
+    const formEntryWishes = 'entry.1835491866';
+    const formEntryName = 'entry.1636282631';
+    let hasSubmitted = false;
+
+    const negativeWords = [
+      '没钱','水逆','失恋','焦虑','熬夜','迷茫','拖延','孤独','瓶颈','内耗','生病','低落'
+    ];
+
+    const palette = ['#f97316','#fbbf24','#34d399','#60a5fa','#a78bfa','#f472b6','#22d3ee','#fb7185'];
+
+    const patterns = {
+      '0':[
+        0,1,1,1,0,
+        1,0,0,0,1,
+        1,0,0,0,1,
+        1,0,0,0,1,
+        1,0,0,0,1,
+        1,0,0,0,1,
+        0,1,1,1,0
+      ],
+      '2':[
+        0,1,1,1,0,
+        1,0,0,0,1,
+        0,0,0,0,1,
+        0,1,1,1,0,
+        1,0,0,0,0,
+        1,0,0,0,0,
+        1,1,1,1,1
+      ],
+      '5':[
+        1,1,1,1,1,
+        1,0,0,0,0,
+        1,1,1,1,0,
+        0,0,0,0,1,
+        0,0,0,0,1,
+        1,0,0,0,1,
+        0,1,1,1,0
+      ],
+      '6':[
+        0,1,1,1,1,
+        1,0,0,0,0,
+        1,0,0,0,0,
+        1,1,1,1,0,
+        1,0,0,0,1,
+        1,0,0,0,1,
+        0,1,1,1,0
+      ]
+    };
+
+    function splitWord(word){
+  if(word.length <= 2) return [word];
+  const parts = [];
+  for(let i=0;i<word.length;i+=2){
+    parts.push(word.slice(i, i+2));
+  }
+  if(parts.length > 1 && parts[parts.length - 1].length === 1){
+    parts[parts.length - 2] += parts.pop();
+  }
+  return parts;
+}
+
+function expandWords(list){
+  return list.flatMap(splitWord);
+}
+function makeWordSpan(text, mode, index, jitterScale = 0){
+      const span = document.createElement('span');
+      span.className = 'word';
+      span.textContent = text;
+      const jitterX = (Math.random() * 6 - 3) * jitterScale;
+      const jitterY = (Math.random() * 6 - 3) * jitterScale;
+      const jitterR = (Math.random() * 8 - 4) * jitterScale;
+      span.style.setProperty('--jx', `${jitterX.toFixed(0)}px`);
+      span.style.setProperty('--jy', `${jitterY.toFixed(0)}px`);
+      span.style.setProperty('--jr', `${jitterR.toFixed(0)}deg`);
+      span.style.setProperty('--ad', `${(Math.random() * 0.45).toFixed(2)}s`);
+      if(mode === 'negative' && index % 2 === 1){
+        span.classList.add('alt');
+      }
+      if(mode === 'positive'){
+        span.style.color = palette[index % palette.length];
+      }
+      return span;
+    }
+
+    function buildDigits(container, digits, words, mode){
+      container.innerHTML = '';
+      let wordIndex = 0;
+      digits.split('').forEach(d => {
+        const digit = document.createElement('div');
+        digit.className = 'digit';
+        const pattern = patterns[d];
+        pattern.forEach(cell => {
+          const cellEl = document.createElement('div');
+          cellEl.className = 'word-cell';
+          if(cell === 1){
+            const text = words[wordIndex % words.length];
+            const spanMain = makeWordSpan(text, mode, wordIndex, 0);
+            cellEl.appendChild(spanMain);
+            wordIndex++;
+
+            if(Math.random() < 0.95){
+              const text2 = words[wordIndex % words.length];
+              const spanSub = makeWordSpan(text2, mode, wordIndex);
+              spanSub.classList.add('sub');
+              cellEl.appendChild(spanSub);
+              wordIndex++;
+            }
+
+            if(Math.random() < 0.8){
+              const text3 = words[wordIndex % words.length];
+              const spanSub2 = makeWordSpan(text3, mode, wordIndex);
+              spanSub2.classList.add('sub2');
+              cellEl.appendChild(spanSub2);
+              wordIndex++;
+            }
+          }
+          digit.appendChild(cellEl);
+        });
+        container.appendChild(digit);
+      });
+    }
+
+    function assignScatterDirectional(container, xMin, xMax, yMin, yMax){
+      container.querySelectorAll('.word').forEach(w => {
+        const dx = (Math.random() * (xMax - xMin) + xMin).toFixed(0);
+        const dy = (Math.random() * (yMax - yMin) + yMin).toFixed(0);
+        const rot = (Math.random() * 100 - 50).toFixed(0);
+        w.style.setProperty('--dx', `${dx}px`);
+        w.style.setProperty('--dy', `${dy}px`);
+        w.style.setProperty('--rot', `${rot}deg`);
+      });
+    }
+
+    let currentScene = scene1;
+
+    function transitionTo(target){
+      if(currentScene === target) return;
+      const outgoing = currentScene;
+      outgoing.classList.add('exiting');
+      outgoing.classList.remove('active');
+      setTimeout(() => {
+        outgoing.classList.add('hidden');
+        outgoing.classList.remove('exiting');
+      }, 2800);
+
+      target.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        target.classList.add('active');
+      });
+
+      currentScene = target;
+    }
+
+    let selectedWishes = [];
+
+    function updatePicked(){
+      if(allButton.classList.contains('active')){
+        wishPicked.textContent = '全部愿景';
+        return;
+      }
+      if(selectedWishes.length === 0){
+        wishPicked.textContent = '未选择';
+        return;
+      }
+      wishPicked.textContent = selectedWishes.join('、');
+    }
+
+    function setAllActive(active){
+      allButton.classList.toggle('active', active);
+      wishButtons.filter(b => b !== allButton).forEach(b => b.classList.toggle('active', false));
+      selectedWishes = active ? [...wishOptions] : [];
+      updatePicked();
+    }
+
+    wishButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const value = btn.dataset.value;
+        if(value === 'all'){
+          setAllActive(!btn.classList.contains('active'));
+          return;
+        }
+
+        if(allButton.classList.contains('active')){
+          allButton.classList.remove('active');
+          selectedWishes = [];
+        }
+
+        btn.classList.toggle('active');
+        const activeValues = wishButtons
+          .filter(b => b !== allButton && b.classList.contains('active'))
+          .map(b => b.dataset.value);
+
+        selectedWishes = activeValues;
+        updatePicked();
+      });
+    });
+
+    document.getElementById('goScene2').addEventListener('click', () => {
+      if(selectedWishes.length === 0 && !allButton.classList.contains('active')){
+        wishHint.textContent = '请至少选择一个愿景';
+        return;
+      }
+      wishHint.textContent = '';
+      if(allButton.classList.contains('active')){
+        selectedWishes = [...wishOptions];
+      }
+      transitionTo(scene2);
+    });
+
+    document.getElementById('goScene3').addEventListener('click', () => {
+      nameHint.textContent = '';
+      prepareAudio();
+      submitWishSelection();
+      transitionTo(sceneMessage);
+      setTimeout(() => {
+        transitionTo(scene3);
+        startFinale();
+      }, 2000);
+    });
+
+    function startFinale(){
+      scene3.classList.add('gray2025');
+      scene3.classList.remove('red');
+      if(captionEl){
+        captionEl.classList.remove('show');
+      }
+      buildDigits(digits2025, '2025', negativeWords, 'negative');
+      const positiveWords = expandWords(selectedWishes.length ? selectedWishes : wishOptions);
+      buildDigits(digits2026, '2026', positiveWords, 'positive');
+
+      digits2025.classList.add('show');
+      digits2025.classList.remove('scatter-in','scatter-out','scatter-cloud');
+      digits2026.classList.remove('show','scatter-in','scatter-out','scatter-cloud');
+
+      assignScatterDirectional(digits2025, -520, -260, 260, 520);
+      assignScatterDirectional(digits2026, 260, 520, -520, -260);
+
+      setTimeout(() => {
+        scene3.classList.remove('gray2025');
+        scene3.classList.add('red');
+        digits2025.classList.add('scatter-out');
+        digits2026.classList.add('show','scatter-cloud');
+      }, 2200);
+
+      setTimeout(() => {
+        digits2026.classList.remove('scatter-cloud');
+        digits2026.classList.add('scatter-in');
+      }, 2700);
+
+      setTimeout(() => {
+        digits2025.classList.remove('show','scatter-out');
+        digits2026.classList.remove('scatter-in');
+        if(captionEl){
+          captionEl.classList.add('show');
+        }
+        startFireworks();
+      }, 4300);
+    }
+
+    function prepareAudio(){
+      if(!audioCtx){
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if(AudioContext){
+          audioCtx = new AudioContext();
+        }
+      }
+      if(audioCtx && audioCtx.state === 'suspended'){
+        audioCtx.resume();
+      }
+    }
+
+    function playFireworkPop(){
+      if(!audioCtx){
+        return;
+      }
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(120 + Math.random() * 240, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.08 + Math.random() * 0.06, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.26);
+    }
+
+    function resizeFireworks(){
+      if(!fireworksCanvas){
+        return;
+      }
+      const dpr = window.devicePixelRatio || 1;
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      fireworksBounds = { w: width, h: height, dpr };
+      fireworksCanvas.width = Math.round(width * dpr);
+      fireworksCanvas.height = Math.round(height * dpr);
+      fireworksCanvas.style.width = `${width}px`;
+      fireworksCanvas.style.height = `${height}px`;
+      if(fireworksCtx){
+        fireworksCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+    }
+
+    function launchFirework(){
+      if(!fireworksCtx){
+        return;
+      }
+      const width = fireworksBounds.w || window.innerWidth;
+      const height = fireworksBounds.h || window.innerHeight;
+      const x = width * (0.1 + Math.random() * 0.8);
+      const y = height * (0.1 + Math.random() * 0.35);
+      const count = 28 + Math.floor(Math.random() * 22);
+      const color = fireworkColors[Math.floor(Math.random() * fireworkColors.length)];
+      for(let i = 0; i < count; i++){
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 1.6 + Math.random() * 2.8;
+        fireworkParticles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 0,
+          ttl: 36 + Math.random() * 22,
+          color
+        });
+      }
+      playFireworkPop();
+    }
+
+    function animateFireworks(){
+      if(!fireworksRunning || !fireworksCtx){
+        return;
+      }
+      const width = fireworksBounds.w || window.innerWidth;
+      const height = fireworksBounds.h || window.innerHeight;
+      fireworksCtx.clearRect(0, 0, width, height);
+      fireworksCtx.globalCompositeOperation = 'lighter';
+      fireworkParticles = fireworkParticles.filter(p => {
+        p.life += 1;
+        p.vx *= 0.98;
+        p.vy = p.vy * 0.98 + 0.04;
+        p.x += p.vx;
+        p.y += p.vy;
+        const lifeRatio = 1 - p.life / p.ttl;
+        if(lifeRatio <= 0){
+          return false;
+        }
+        fireworksCtx.fillStyle = `${p.color}${Math.floor(lifeRatio * 255).toString(16).padStart(2, '0')}`;
+        fireworksCtx.beginPath();
+        fireworksCtx.arc(p.x, p.y, 2.2, 0, Math.PI * 2);
+        fireworksCtx.fill();
+        return true;
+      });
+      fireworksCtx.globalCompositeOperation = 'source-over';
+      fireworksFrame = requestAnimationFrame(animateFireworks);
+    }
+
+    function startFireworks(){
+      if(fireworksRunning || !fireworksCanvas || !fireworksCtx){
+        return;
+      }
+      fireworksRunning = true;
+      fireworksCanvas.classList.add('show');
+      resizeFireworks();
+      window.addEventListener('resize', resizeFireworks);
+      launchFirework();
+      fireworksTimer = setInterval(launchFirework, 900);
+      animateFireworks();
+    }
+    function submitWishSelection(){
+      if(hasSubmitted){
+        return;
+      }
+      hasSubmitted = true;
+      const wishes = selectedWishes.length ? selectedWishes : wishOptions;
+      const payload = new URLSearchParams();
+      payload.append(formEntryWishes, wishes.join('、'));
+      payload.append(formEntryName, nameInput.value.trim());
+      fetch(formEndpoint, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        body: payload.toString()
+      }).catch(() => {});
+    }
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

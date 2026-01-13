@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星辰占卜卡牌 - 答案之书</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:wght@400;700&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Playfair Display', serif;
+            background-color: #0a0a1a;
+            color: #e6e6ff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* 星空背景 */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -3;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 5s infinite alternate;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        
+        /* 日月同辉 */
+        .sun-moon {
+            position: fixed;
+            top: 5%;
+            right: 8%;
+            width: 200px;
+            height: 200px;
+            z-index: -2;
+        }
+        
+        .sun {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #ffaa33, #ff5500);
+            border-radius: 50%;
+            box-shadow: 0 0 40px 15px rgba(255, 100, 0, 0.5);
+            animation: sun-glow 10s infinite alternate;
+            top: 10px;
+            right: 10px;
+        }
+        
+        .moon {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            background: radial-gradient(circle, #ccccff, #8888cc);
+            border-radius: 50%;
+            box-shadow: 0 0 30px 10px rgba(150, 150, 255, 0.4);
+            animation: moon-glow 12s infinite alternate;
+            bottom: 10px;
+            left: 10px;
+        }
+        
+        @keyframes sun-glow {
+            0% { box-shadow: 0 0 40px 15px rgba(255, 100, 0, 0.5); }
+            100% { box-shadow: 0 0 60px 25px rgba(255, 150, 0, 0.7); }
+        }
+        
+        @keyframes moon-glow {
+            0% { box-shadow: 0 0 30px 10px rgba(150, 150, 255, 0.4); }
+            100% { box-shadow: 0 0 50px 20px rgba(200, 200, 255, 0.6); }
+        }
+        
+        /* 银河 */
+        .galaxy {
+            position: fixed;
+            top: 50%;
+            left: -50%;
+            width: 200%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1) 20%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0.1) 80%, transparent);
+            transform: rotate(-15deg);
+            z-index: -1;
+        }
+        
+        /* 主容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        /* 标题 */
+        header {
+            text-align: center;
+            margin: 30px 0 40px;
+            padding: 20px;
+            position: relative;
+        }
+        
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #ffaa33, #ccccff, #8888cc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            letter-spacing: 3px;
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            color: #aaaaff;
+            font-style: italic;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+            text-shadow: 0 0 10px rgba(150, 150, 255, 0.3);
+        }
+        
+        /* 占卜说明 */
+        .instructions {
+            background: rgba(20, 20, 40, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 40px;
+            width: 90%;
+            max-width: 800px;
+            border: 1px solid rgba(100, 100, 255, 0.2);
+            box-shadow: 0 0 30px rgba(0, 0, 50, 0.5);
+            text-align: center;
+        }
+        
+        .instructions h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #ffcc66;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .instructions p {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #ccccff;
+            margin-bottom: 10px;
+        }
+        
+        /* 音效控制 */
+        .sound-control {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+        
+        .sound-btn {
+            background: rgba(20, 20, 40, 0.8);
+            border: 1px solid rgba(100, 100, 255, 0.3);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaaaff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .sound-btn:hover {
+            background: rgba(40, 40, 80, 0.9);
+            transform: scale(1.1);
+            color: #ffffff;
+        }
+        
+        /* 卡牌区域 */
+        .card-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin: 20px 0 40px;
+        }
+        
+        .card-container {
+            position: relative;
+            width: 320px;
+            height: 450px;
+            margin: 0 auto 60px;
+            perspective: 1000px;
+        }
+        
+        .card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+        }
+        
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            overflow: hidden;
+        }
+        
+        .card-back {
+            background: linear-gradient(135deg, #1a1a3a, #0a0a1a);
+            border: 3px solid #4444aa;
+            color: #ccccff;
+        }
+        
+        .card-back .card-pattern {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 30% 30%, rgba(100, 100, 255, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 70% 70%, rgba(255, 200, 100, 0.1) 2px, transparent 2px);
+            background-size: 50px 50px;
+            opacity: 0.5;
+        }
+        
+        .card-back h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.2rem;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ffcc66;
+            z-index: 1;
+        }
+        
+        .card-back .constellation {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            z-index: 1;
+        }
+        
+        .card-back p {
+            font-size: 1.2rem;
+            text-align: center;
+            color: #aaaaff;
+            z-index: 1;
+        }
+        
+        .card-front {
+            background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+            transform: rotateY(180deg);
+            border: 3px solid #6666cc;
+            justify-content: space-between;
+        }
+        
+        .card-category {
+            font-family: 'Cinzel', serif;
+            font-size: 1.4rem;
+            color: #ffcc66;
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 8px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 30px;
+            border: 1px solid #6666cc;
+            width: 100%;
+        }
+        
+        .card-symbol {
+            font-size: 4.5rem;
+            margin: 10px 0 25px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card-text {
+            font-size: 1.4rem;
+            line-height: 1.5;
+            text-align: center;
+            color: #e6e6ff;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+        
+        .card-footer {
+            font-size: 1rem;
+            color: #aaaaff;
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(100, 100, 255, 0.3);
+            width: 100%;
+        }
+        
+        /* 控制按钮 */
+        .controls {
+            display: flex;
+            gap: 25px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 18px 35px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .draw-card {
+            background: linear-gradient(135deg, #8a2387, #e94057, #f27121);
+            color: white;
+        }
+        
+        .draw-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(233, 64, 87, 0.4);
+        }
+        
+        .draw-card:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .reset-card {
+            background: rgba(30, 30, 60, 0.8);
+            color: #aaaaff;
+            border: 2px solid #4444aa;
+        }
+        
+        .reset-card:hover {
+            background: rgba(40, 40, 80, 0.9);
+            transform: translateY(-3px);
+        }
+        
+        /* 历史记录 */
+        .history-section {
+            width: 90%;
+            max-width: 1000px;
+            background: rgba(20, 20, 40, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            border: 1px solid rgba(100, 100, 255, 0.2);
+            box-shadow: 0 0 30px rgba(0, 0, 50, 0.5);
+        }
+        
+        .history-section h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #ffcc66;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .history-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .history-card {
+            width: 150px;
+            height: 210px;
+            background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            border: 2px solid #4444aa;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .history-card:hover {
+            transform: translateY(-5px);
+            border-color: #6666cc;
+        }
+        
+        .history-symbol {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .history-text {
+            font-size: 0.9rem;
+            text-align: center;
+            color: #ccccff;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 音效提示 */
+        .sound-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(20, 20, 40, 0.8);
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            color: #aaaaff;
+            border: 1px solid rgba(100, 100, 255, 0.3);
+            max-width: 250px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+        
+        .sound-hint.show {
+            opacity: 1;
+        }
+        
+        /* 卡牌类别样式 */
+        .card-type-1 .card-front { background: linear-gradient(135deg, #1a2a3a, #0a1a2a); border-color: #3388ff; }
+        .card-type-2 .card-front { background: linear-gradient(135deg, #2a1a3a, #1a0a2a); border-color: #aa44ff; }
+        .card-type-3 .card-front { background: linear-gradient(135deg, #3a2a1a, #2a1a0a); border-color: #ffaa33; }
+        .card-type-4 .card-front { background: linear-gradient(135deg, #1a3a2a, #0a2a1a); border-color: #33ff88; }
+        .card-type-5 .card-front { background: linear-gradient(135deg, #3a1a2a, #2a0a1a); border-color: #ff4466; }
+        
+        /* 动画效果 */
+        @keyframes drawCard {
+            0% { transform: scale(0.8) rotateY(0); opacity: 0; }
+            100% { transform: scale(1) rotateY(180deg); opacity: 1; }
+        }
+        
+        .drawing {
+            animation: drawCard 1.5s ease forwards;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .subtitle { font-size: 1.1rem; }
+            .card-container { width: 280px; height: 400px; }
+            .controls { gap: 15px; }
+            .btn { padding: 15px 25px; font-size: 1.1rem; }
+            .card-symbol { font-size: 3.5rem; }
+            .card-text { font-size: 1.2rem; }
+            .sound-control { top: 10px; left: 10px; }
+            .sound-btn { width: 40px; height: 40px; font-size: 1.2rem; }
+        }
+        
+        @media (max-width: 480px) {
+            h1 { font-size: 2rem; }
+            .card-container { width: 250px; height: 360px; }
+            .controls { flex-direction: column; align-items: center; }
+            .btn { width: 100%; max-width: 280px; justify-content: center; }
+            .sound-hint { bottom: 10px; right: 10px; left: 10px; max-width: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 星空背景 -->
+    <div class="stars" id="stars"></div>
+    <div class="sun-moon">
+        <div class="sun"></div>
+        <div class="moon"></div>
+    </div>
+    <div class="galaxy"></div>
+    
+    <!-- 音效控制 -->
+    <div class="sound-control">
+        <button class="sound-btn" id="sound-toggle">
+            <i class="fas fa-volume-up"></i>
+        </button>
+    </div>
+    
+    <!-- 音效提示 -->
+    <div class="sound-hint" id="sound-hint">音效已启用</div>
+    
+    <!-- 主内容 -->
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-star-and-crescent"></i> 星辰占卜卡牌</h1>
+            <p class="subtitle">心中默念你的问题，然后从宇宙的智慧中抽取一张卡牌。每张卡牌都蕴含着独特的答案与能量，星辰将指引你前行的方向。</p>
+        </header>
+        
+        <div class="instructions">
+            <h2><i class="fas fa-crystal-ball"></i> 如何占卜</h2>
+            <p>1. 在心中清晰地问出你的问题，专注于你的困惑或期待</p>
+            <p>2. 点击"抽取卡牌"按钮，等待卡牌翻转显现答案</p>
+            <p>3. 不同类别的卡牌会触发不同的神秘音效</p>
+            <p>4. 解读卡牌上的信息，它可能提供指引、警示或新的视角</p>
+            <p>5. 如需重新占卜，可以重置卡牌并再次抽取</p>
+        </div>
+        
+        <div class="card-section">
+            <div class="card-container">
+                <div class="card" id="card">
+                    <!-- 卡牌背面 -->
+                    <div class="card-face card-back">
+                        <div class="card-pattern"></div>
+                        <h3>星辰卡牌</h3>
+                        <div class="constellation">✦</div>
+                        <p>集中意念<br>点击下方按钮抽取卡牌</p>
+                    </div>
+                    
+                    <!-- 卡牌正面 -->
+                    <div class="card-face card-front">
+                        <div class="card-category" id="card-category">命运指引</div>
+                        <div class="card-symbol" id="card-symbol">✦</div>
+                        <div class="card-text" id="card-text">卡牌将在这里显示答案...</div>
+                        <div class="card-footer">星辰的启示 · 宇宙的智慧</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn draw-card" id="draw-card">
+                    <i class="fas fa-hand-sparkles"></i> 抽取卡牌
+                </button>
+                <button class="btn reset-card" id="reset-card">
+                    <i class="fas fa-redo"></i> 重置卡牌
+                </button>
+            </div>
+        </div>
+        
+        <div class="history-section">
+            <h2><i class="fas fa-scroll"></i> 占卜记录</h2>
+            <div class="history-cards" id="history-cards">
+                <!-- 历史记录卡牌将通过JavaScript动态添加 -->
+                <div class="history-card-empty">
+                    <p>暂无占卜记录</p>
+                    <p>进行第一次占卜吧</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 生成星空
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 200;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // 随机大小
+                const size = Math.random() * 3 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                
+                // 随机位置
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                
+                // 随机闪烁延迟
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        // 卡牌数据 - 100个不同的答案，每个答案有符号、文本和类别
+        const cardData = [
+            { symbol: "☉", text: "太阳之光将驱散阴霾，新的开始就在眼前", category: "希望" },
+            { symbol: "☽", text: "月亮的温柔提醒你，现在是反思和自省的时刻", category: "内省" },
+            { symbol: "✦", text: "星辰指引你走向未知的道路，那里有意外收获", category: "指引" },
+            { symbol: "♒", text: "水瓶座的智慧告诉你：创新是突破困境的关键", category: "创新" },
+            { symbol: "♋", text: "巨蟹座的关怀提醒：家庭与情感需要你的关注", category: "情感" },
+            { symbol: "♐", text: "射手座的箭矢指向远方，旅行或学习将带来成长", category: "成长" },
+            { symbol: "☄", text: "流星划过夜空，预示着一个突如其来的机会", category: "机会" },
+            { symbol: "🌀", text: "命运的漩涡正在转向，耐心等待变化的完成", category: "变化" },
+            { symbol: "⚖", text: "天秤的平衡提醒你：在决策中需要权衡利弊", category: "平衡" },
+            { symbol: "🜂", text: "火元素的能量将点燃你的激情与动力", category: "能量" },
+            { symbol: "🜄", text: "水元素的流动提示：适应变化比抵抗更明智", category: "适应" },
+            { symbol: "🌌", text: "银河的浩瀚提醒：你的问题在宇宙尺度下微不足道", category: "视角" },
+            { symbol: "🌠", text: "流星雨般的灵感将降临，记录下每一个想法", category: "灵感" },
+            { symbol: "🔭", text: "望远镜的视野：你需要更长远的目光看待问题", category: "远见" },
+            { symbol: "🧭", text: "指南针指向北方，你的内心知道正确的方向", category: "直觉" },
+            { symbol: "🌙", text: "新月象征新的开始，现在是设定目标的良机", category: "开始" },
+            { symbol: "🌕", text: "满月的光芒下，隐藏的真相即将浮出水面", category: "真相" },
+            { symbol: "🪐", text: "土星的光环提醒：责任与纪律是成功的关键", category: "责任" },
+            { symbol: "⭐", text: "北极星的恒定：在变化中寻找不变的核心价值", category: "稳定" },
+            { symbol: "🌅", text: "日出的光辉：黑暗即将过去，光明即将到来", category: "希望" },
+            { symbol: "🌉", text: "桥梁连接两岸，你需要搭建沟通的渠道", category: "沟通" },
+            { symbol: "🗝", text: "古老的钥匙：答案藏在被你忽视的过去经验中", category: "回忆" },
+            { symbol: "🔮", text: "水晶球的景象：未来有多个分支，选择权在你手中", category: "选择" },
+            { symbol: "🕯", text: "烛光的启示：在黑暗中，你自己的光芒最能指引方向", category: "自信" },
+            { symbol: "⏳", text: "沙漏的提醒：时间是有限的，请明智地使用它", category: "时间" },
+            { symbol: "📜", text: "古老卷轴：传统的智慧可能包含你需要的答案", category: "智慧" },
+            { symbol: "🦉", text: "猫头鹰的智慧：观察和学习将带来问题的解决", category: "学习" },
+            { symbol: "🦋", text: "蝴蝶的蜕变：变化虽然困难，但将带来美丽的结果", category: "转变" },
+            { symbol: "🐺", text: "狼的嚎叫：你并不孤单，寻找你的群体或支持者", category: "支持" },
+            { symbol: "🌳", text: "世界树的根系：你的基础比想象中更稳固", category: "基础" },
+            { symbol: "🌊", text: "海浪的力量：情绪如潮水，学会与其共处而非对抗", category: "情绪" },
+            { symbol: "🔥", text: "火焰的净化：放下过去的负担，让火焰净化前行道路", category: "释放" },
+            { symbol: "🌪", text: "旋风的中心：在混乱中寻找平静的核心", category: "平静" },
+            { symbol: "🌈", text: "彩虹的承诺：困难之后将有美好等待", category: "希望" },
+            { symbol: "⚡", text: "闪电的启示：突然的洞察将照亮问题的本质", category: "洞察" },
+            { symbol: "🌱", text: "种子的潜力：小小的开始蕴含着巨大的成长可能", category: "潜力" },
+            { symbol: "🕊", text: "和平鸽：冲突将得到化解，和谐即将恢复", category: "和谐" },
+            { symbol: "🛡", text: "盾牌的守护：建立适当的边界保护自己", category: "保护" },
+            { symbol: "🗡", text: "剑的锋利：需要果断的行动来切断困境", category: "果断" },
+            { symbol: "🏹", text: "弓箭的目标：清晰的目标是成功的一半", category: "目标" },
+            { symbol: "🧱", text: "砖墙的启示：障碍是测试你决心和创造力的机会", category: "挑战" },
+            { symbol: "🌉", text: "彩虹桥：看似不可能的连接将成为可能", category: "连接" },
+            { symbol: "🕳", text: "黑洞的隐喻：有些问题不需要答案，只需要接受", category: "接受" },
+            { symbol: "🌠", text: "许愿星：你的渴望有实现的可能，但需要行动", category: "愿望" },
+            { symbol: "🧭", text: "磁石指南针：你的热情将自然引导你走向正确方向", category: "热情" },
+            { symbol: "🔔", text: "警钟的提醒：注意被忽视的危险信号", category: "警示" },
+            { symbol: "🎭", text: "戏剧面具：表象之下可能有不同的真相", category: "真相" },
+            { symbol: "⚓", text: "锚的稳定：在动荡中寻找可以依靠的稳定点", category: "稳定" },
+            { symbol: "🚪", text: "敞开的大门：机会已经出现，只需迈出第一步", category: "机会" },
+            { symbol: "🪜", text: "梯子的阶梯：成功需要一步一步地积累", category: "耐心" },
+            { symbol: "🌹", text: "玫瑰的美丽与刺：美好的事物往往伴随着挑战", category: "现实" },
+            { symbol: "🍃", text: "风中的叶子：顺应潮流比逆流而上更明智", category: "顺势" },
+            { symbol: "🕸", text: "蜘蛛网的连接：所有事物都有内在联系", category: "联系" },
+            { symbol: "🐚", text: "贝壳的回声：倾听内心的声音，答案就在那里", category: "内心" },
+            { symbol: "🌵", text: "沙漠仙人掌：在艰苦环境中储存资源和耐心", category: "准备" },
+            { symbol: "🦚", text: "孔雀开屏：展示你的独特才能，不要隐藏", category: "表达" },
+            { symbol: "🦉", text: "夜行猫头鹰：在安静和独处中找到答案", category: "独处" },
+            { symbol: "🦋", text: "破茧成蝶：当前的限制是为了未来更自由的飞翔", category: "成长" },
+            { symbol: "🐢", text: "乌龟的耐心：缓慢而稳定的进展将赢得比赛", category: "坚持" },
+            { symbol: "🐬", text: "海豚的玩耍：不要忘记在旅程中寻找乐趣", category: "快乐" },
+            { symbol: "🦅", text: "鹰的视野：从更高角度看待问题", category: "视角" },
+            { symbol: "🦉", text: "智慧之鸟：答案来自知识和经验", category: "知识" },
+            { symbol: "🐍", text: "蛇的蜕变：放下旧皮囊，迎接新的自我", category: "更新" },
+            { symbol: "🦊", text: "狐狸的机智：巧妙的方法比蛮力更有效", category: "策略" },
+            { symbol: "🐘", text: "大象的记忆：过去的经验包含重要线索", category: "经验" },
+            { symbol: "🦓", text: "斑马的条纹：在对比中找到平衡", category: "平衡" },
+            { symbol: "🦒", text: "长颈鹿的高度：站得更高，看得更远", category: "远见" },
+            { symbol: "🦘", text: "袋鼠的跳跃：大胆跃进可能带来突破", category: "勇气" },
+            { symbol: "🦔", text: "刺猬的防御：有时自我保护是必要的", category: "自我保护" },
+            { symbol: "🦩", text: "火烈鸟的平衡：在困境中保持优雅与平衡", category: "优雅" },
+            { symbol: "🐧", text: "企鹅的适应：在最寒冷的环境中也能找到温暖", category: "适应" },
+            { symbol: "🐋", text: "鲸鱼的深度：潜入深处寻找答案", category: "深度" },
+            { symbol: "🦭", text: "海豹的灵活：在变化的环境中保持灵活性", category: "灵活" },
+            { symbol: "🐅", text: "老虎的力量：内在力量等待被唤醒", category: "力量" },
+            { symbol: "🦏", text: "犀牛的坚韧：以坚定的决心面对障碍", category: "决心" },
+            { symbol: "🦬", text: "野牛的力量：集体的支持将帮助你前行", category: "社区" },
+            { symbol: "🦌", text: "鹿的警觉：注意周围的信号和迹象", category: "警觉" },
+            { symbol: "🐐", text: "山羊的攀登：艰难的道路通向壮丽的景色", category: "努力" },
+            { symbol: "🐎", text: "马的自由：摆脱束缚，追求真正的自由", category: "自由" },
+            { symbol: "🦄", text: "独角兽的魔法：相信奇迹可能发生", category: "信念" },
+            { symbol: "🐲", text: "龙的智慧：古老智慧包含现代问题的答案", category: "智慧" },
+            { symbol: "🦕", text: "恐龙的灭绝：有些事物需要放手让它们结束", category: "结束" },
+            { symbol: "🦖", text: "暴龙的霸气：有时需要展示力量来维护立场", category: "力量" },
+            { symbol: "🦚", text: "凤凰的涅槃：从灰烬中重生，更加强大", category: "重生" },
+            { symbol: "🧚", text: "精灵的魔法：小改变可能产生大影响", category: "微调" },
+            { symbol: "🧞", text: "神灯的精灵：明确你的愿望，它们可能实现", category: "愿望" },
+            { symbol: "🧜", text: "美人鱼的歌声：倾听被忽视的声音和信息", category: "倾听" },
+            { symbol: "🧝", text: "精灵的弓箭：精准聚焦于目标", category: "专注" },
+            { symbol: "🏛", text: "神庙的柱子：建立坚实的原则和价值观", category: "原则" },
+            { symbol: "🕍", text: "圣殿的寂静：在安静中找到神圣的指引", category: "宁静" },
+            { symbol: "⛩", text: "神社的祈愿：你的意图将影响结果", category: "意图" },
+            { symbol: "🛕", text: "佛塔的层次：理解问题的不同层面", category: "理解" },
+            { symbol: "🌋", text: "火山的爆发：压抑的情绪需要释放", category: "释放" },
+            { symbol: "🏔", text: "山峰的顶峰：目标值得攀登的努力", category: "成就" },
+            { symbol: "🏝", text: "孤岛的独立：有时需要独自面对和解决", category: "独立" },
+            { symbol: "🏜", text: "沙漠的广阔：简化问题，去除不必要的复杂性", category: "简化" },
+            { symbol: "❄", text: "雪花的独特：每个问题都有独特的解决方案", category: "独特" },
+            { symbol: "🌬", text: "风的自由：放下控制，让事物自然发展", category: "顺其自然" }
+        ];
+        
+        // 获取DOM元素
+        const card = document.getElementById('card');
+        const cardSymbol = document.getElementById('card-symbol');
+        const cardText = document.getElementById('card-text');
+        const cardCategory = document.getElementById('card-category');
+        const drawButton = document.getElementById('draw-card');
+        const resetButton = document.getElementById('reset-card');
+        const historyCardsContainer = document.getElementById('history-cards');
+        const soundToggle = document.getElementById('sound-toggle');
+        const soundHint = document.getElementById('sound-hint');
+        
+        // 音效变量
+        let audioContext;
+        let isSoundEnabled = true;
+        let isCardFlipped = false;
+        let isDrawing = false;
+        let history = JSON.parse(localStorage.getItem('starCardsHistory')) || [];
+        
+        // 初始化音频上下文
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioContext;
+        }
+        
+        // 创建更清晰、简单的音效
+        function createSimpleSound(frequency, duration, type = 'sine', volume = 0.3) {
+            try {
+                const ctx = initAudioContext();
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = type;
+                
+                const now = ctx.currentTime;
+                gainNode.gain.setValueAtTime(0, now);
+                gainNode.gain.linearRampToValueAtTime(volume, now + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
+                
+                oscillator.start(now);
+                oscillator.stop(now + duration);
+            } catch (error) {
+                console.log("创建音效失败:", error);
+            }
+        }
+        
+        // 创建翻转卡牌音效
+        function playFlipSound() {
+            createSimpleSound(600, 0.3, 'sine', 0.2);
+        }
+        
+        // 根据卡牌类别播放不同的音效
+        function playCardSound(cardType) {
+            // 等待翻转音效结束后再播放类别音效
+            setTimeout(() => {
+                switch(cardType) {
+                    case 1: // 希望类 - 明亮上升音
+                        createSimpleSound(523.25, 0.5, 'sine', 0.25);
+                        setTimeout(() => {
+                            createSimpleSound(659.25, 0.3, 'sine', 0.2);
+                        }, 200);
+                        break;
+                    case 2: // 内省类 - 柔和下降音
+                        createSimpleSound(392, 0.8, 'sine', 0.2);
+                        break;
+                    case 3: // 指引类 - 神秘共鸣音
+                        createSimpleSound(329.63, 0.6, 'sine', 0.25);
+                        setTimeout(() => {
+                            createSimpleSound(440, 0.4, 'sine', 0.2);
+                        }, 150);
+                        break;
+                    case 4: // 创新类 - 轻快跳音
+                        createSimpleSound(523.25, 0.2, 'sine', 0.2);
+                        setTimeout(() => {
+                            createSimpleSound(659.25, 0.2, 'sine', 0.15);
+                        }, 100);
+                        setTimeout(() => {
+                            createSimpleSound(783.99, 0.3, 'sine', 0.1);
+                        }, 200);
+                        break;
+                    case 5: // 情感类 - 温暖和弦
+                        const ctx = initAudioContext();
+                        const now = ctx.currentTime;
+                        
+                        // C大和弦 (C, E, G)
+                        const frequencies = [261.63, 329.63, 392];
+                        frequencies.forEach(freq => {
+                            const oscillator = ctx.createOscillator();
+                            const gainNode = ctx.createGain();
+                            
+                            oscillator.connect(gainNode);
+                            gainNode.connect(ctx.destination);
+                            
+                            oscillator.frequency.value = freq;
+                            oscillator.type = 'sine';
+                            
+                            gainNode.gain.setValueAtTime(0, now);
+                            gainNode.gain.linearRampToValueAtTime(0.15, now + 0.05);
+                            gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+                            
+                            oscillator.start(now);
+                            oscillator.stop(now + 0.8);
+                        });
+                        break;
+                }
+            }, 350);
+        }
+        
+        // 播放重置音效
+        function playResetSound() {
+            createSimpleSound(400, 0.3, 'sine', 0.2);
+        }
+        
+        // 初始化页面
+        function init() {
+            createStars();
+            updateHistoryDisplay();
+            
+            // 检查本地存储中的音效设置
+            const savedSoundSetting = localStorage.getItem('starCardsSoundEnabled');
+            if (savedSoundSetting !== null) {
+                isSoundEnabled = savedSoundSetting === 'true';
+                updateSoundButton();
+            }
+            
+            // 如果历史记录为空，显示提示
+            if (history.length === 0) {
+                historyCardsContainer.innerHTML = `
+                    <div class="history-card-empty" style="width:100%; text-align:center; color:#8888cc; font-style:italic; padding:40px 20px;">
+                        <p>暂无占卜记录</p>
+                        <p>进行第一次占卜吧</p>
+                    </div>
+                `;
+            }
+            
+            // 显示音效提示
+            showSoundHint(isSoundEnabled ? "音效已启用" : "音效已关闭");
+            
+            // 添加用户交互激活音频上下文
+            document.addEventListener('click', function initAudio() {
+                initAudioContext();
+                document.removeEventListener('click', initAudio);
+            });
+        }
+        
+        // 更新音效按钮显示
+        function updateSoundButton() {
+            const icon = soundToggle.querySelector('i');
+            if (isSoundEnabled) {
+                icon.className = 'fas fa-volume-up';
+                soundToggle.style.color = '#aaaaff';
+            } else {
+                icon.className = 'fas fa-volume-mute';
+                soundToggle.style.color = '#666688';
+            }
+            
+            // 保存设置到本地存储
+            localStorage.setItem('starCardsSoundEnabled', isSoundEnabled);
+        }
+        
+        // 显示音效提示
+        function showSoundHint(message) {
+            soundHint.textContent = message;
+            soundHint.classList.add('show');
+            
+            setTimeout(() => {
+                soundHint.classList.remove('show');
+            }, 2000);
+        }
+        
+        // 抽取卡牌
+        function drawCard() {
+            if (isDrawing || isCardFlipped) return;
+            
+            isDrawing = true;
+            drawButton.disabled = true;
+            
+            // 随机选择一张卡牌
+            const randomIndex = Math.floor(Math.random() * cardData.length);
+            const selectedCard = cardData[randomIndex];
+            
+            // 更新卡牌内容
+            cardSymbol.textContent = selectedCard.symbol;
+            cardText.textContent = selectedCard.text;
+            cardCategory.textContent = selectedCard.category;
+            
+            // 随机选择卡牌类型（用于不同颜色样式和音效）
+            const cardType = Math.floor(Math.random() * 5) + 1;
+            card.className = `card card-type-${cardType}`;
+            
+            // 播放音效
+            if (isSoundEnabled) {
+                playFlipSound();
+                playCardSound(cardType);
+            }
+            
+            // 添加抽卡动画
+            card.classList.add('drawing');
+            
+            // 翻转卡牌
+            setTimeout(() => {
+                card.classList.add('flipped');
+                isCardFlipped = true;
+                card.classList.remove('drawing');
+                
+                // 保存到历史记录
+                saveToHistory(selectedCard, cardType);
+                
+                // 恢复按钮状态
+                isDrawing = false;
+                drawButton.disabled = false;
+            }, 800);
+        }
+        
+        // 重置卡牌
+        function resetCard() {
+            if (isDrawing) return;
+            
+            card.classList.remove('flipped');
+            isCardFlipped = false;
+            
+            // 播放重置音效
+            if (isSoundEnabled) {
+                playResetSound();
+            }
+        }
+        
+        // 保存到历史记录
+        function saveToHistory(cardData, cardType) {
+            // 创建历史记录对象
+            const historyItem = {
+                symbol: cardData.symbol,
+                text: cardData.text,
+                category: cardData.category,
+                cardType: cardType,
+                timestamp: new Date().toLocaleString(),
+                id: Date.now() // 使用时间戳作为唯一ID
+            };
+            
+            // 添加到历史记录数组
+            history.unshift(historyItem);
+            
+            // 限制历史记录数量（最多12条）
+            if (history.length > 12) {
+                history = history.slice(0, 12);
+            }
+            
+            // 保存到本地存储
+            localStorage.setItem('starCardsHistory', JSON.stringify(history));
+            
+            // 更新历史记录显示
+            updateHistoryDisplay();
+        }
+        
+        // 更新历史记录显示
+        function updateHistoryDisplay() {
+            // 如果历史记录为空，不更新
+            if (history.length === 0) return;
+            
+            // 清空历史记录容器
+            historyCardsContainer.innerHTML = '';
+            
+            // 添加历史记录卡牌
+            history.forEach(item => {
+                const historyCard = document.createElement('div');
+                historyCard.className = 'history-card';
+                historyCard.classList.add(`card-type-${item.cardType}`);
+                historyCard.innerHTML = `
+                    <div class="history-symbol">${item.symbol}</div>
+                    <div class="history-text">${item.text.length > 30 ? item.text.substring(0, 30) + '...' : item.text}</div>
+                    <div style="font-size:0.7rem; color:#8888cc;">${item.category}</div>
+                `;
+                
+                // 点击历史卡牌可以查看详情
+                historyCard.addEventListener('click', () => {
+                    cardSymbol.textContent = item.symbol;
+                    cardText.textContent = item.text;
+                    cardCategory.textContent = item.category;
+                    card.className = `card card-type-${item.cardType}`;
+                    
+                    // 播放对应的音效
+                    if (isSoundEnabled) {
+                        playFlipSound();
+                        setTimeout(() => {
+                            playCardSound(item.cardType);
+                        }, 350);
+                    }
+                    
+                    // 如果卡牌未翻转，先翻转
+                    if (!isCardFlipped) {
+                        card.classList.add('flipped');
+                        isCardFlipped = true;
+                    }
+                    
+                    // 滚动到卡牌位置
+                    document.querySelector('.card-section').scrollIntoView({ behavior: 'smooth' });
+                });
+                
+                historyCardsContainer.appendChild(historyCard);
+            });
+        }
+        
+        // 事件监听
+        drawButton.addEventListener('click', drawCard);
+        resetButton.addEventListener('click', resetCard);
+        
+        // 音效切换
+        soundToggle.addEventListener('click', () => {
+            isSoundEnabled = !isSoundEnabled;
+            updateSoundButton();
+            showSoundHint(isSoundEnabled ? "音效已启用" : "音效已关闭");
+        });
+        
+        // 卡牌点击也可以翻转（如果已抽取）
+        card.addEventListener('click', () => {
+            if (isCardFlipped && !isDrawing) {
+                // 如果卡牌已翻转，点击可以查看背面
+                resetCard();
+            }
+        });
+        
+        // 初始化页面
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // 添加一些初始历史记录（如果为空）
+        if (history.length === 0) {
+            // 添加3个示例记录
+            const exampleCards = [
+                { symbol: "☉", text: "太阳之光将驱散阴霾，新的开始就在眼前", category: "希望", cardType: 1 },
+                { symbol: "🌌", text: "银河的浩瀚提醒：你的问题在宇宙尺度下微不足道", category: "视角", cardType: 3 },
+                { symbol: "🌈", text: "彩虹的承诺：困难之后将有美好等待", category: "希望", cardType: 1 }
+            ];
+            
+            exampleCards.forEach(card => {
+                saveToHistory(card, card.cardType);
+            });
+        }
+        
+        // 添加键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            // 空格键抽取卡牌
+            if (e.code === 'Space' && !isCardFlipped) {
+                e.preventDefault();
+                drawCard();
+            }
+            
+            // R键重置卡牌
+            if (e.code === 'KeyR' && isCardFlipped) {
+                e.preventDefault();
+                resetCard();
+            }
+            
+            // M键切换音效
+            if (e.code === 'KeyM') {
+                e.preventDefault();
+                isSoundEnabled = !isSoundEnabled;
+                updateSoundButton();
+                showSoundHint(isSoundEnabled ? "音效已启用 (M键切换)" : "音效已关闭 (M键切换)");
+            }
+        });
+    </script>
+</body>
+</html>
