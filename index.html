@@ -87,6 +87,19 @@
     }
     .scene.final .scene-3-wrap{z-index:2}
 
+    .fireworks{
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      pointer-events:none;
+      opacity:0;
+      transition:opacity .6s ease;
+      z-index:1;
+      mix-blend-mode:screen;
+    }
+    .fireworks.show{opacity:1}
+
     .scene.gray2025::before{
       content:"";
       position:fixed;
@@ -213,12 +226,13 @@
       justify-content:center;
       margin-top:6px;
     }
+
     .wish-item{
-      border:1px solid rgba(15,23,42,.15);
-      background:#ffffff;
-      color:#0f172a;
+      border:none;
+      background:url("assets/button.png") no-repeat center/100% 100%;
+      color:#b91c1c;
       border-radius:18px;
-      padding:8px 22px;
+      padding:8px 20px;
       font-size:clamp(14px,3.2vw,20px);
       letter-spacing:1px;
       display:flex;
@@ -227,10 +241,10 @@
       text-align:center;
       position:relative;
       cursor:pointer;
-      transition:transform .2s ease, border-color .2s ease, background .2s ease;
+      transition:transform .2s ease, box-shadow .2s ease, filter .2s ease;
       box-shadow:none;
       margin-top:0;
-      font-weight:500;
+      font-weight:700;
     }
 
     .wish-item::after{
@@ -245,10 +259,11 @@
       transform:translateY(-50%);
       pointer-events:none;
     }
+
     .wish-item.active{
-      border-color:rgba(239,68,68,.7);
-      background:rgba(239,68,68,.08);
-      transform:translateY(-2px);
+      transform:translateY(-2px) scale(1.02);
+      box-shadow:0 12px 22px rgba(185,28,28,.28);
+      filter:saturate(1.05);
     }
     .wish-item.active::after{opacity:1}
 
@@ -488,12 +503,13 @@
       .digits{gap:clamp(12px,4vw,18px);justify-content:space-evenly}
       .digits-stage{width:100vw}
       .word{font-size:clamp(5px,1.4vw,7px)}
+
     .wish-item{
-      border:1px solid rgba(15,23,42,.15);
-      background:#ffffff;
-      color:#0f172a;
+      border:none;
+      background:url("assets/button.png") no-repeat center/100% 100%;
+      color:#b91c1c;
       border-radius:18px;
-      padding:8px 22px;
+      padding:8px 20px;
       font-size:clamp(14px,3.2vw,20px);
       letter-spacing:1px;
       display:flex;
@@ -502,10 +518,10 @@
       text-align:center;
       position:relative;
       cursor:pointer;
-      transition:transform .2s ease, border-color .2s ease, background .2s ease;
+      transition:transform .2s ease, box-shadow .2s ease, filter .2s ease;
       box-shadow:none;
       margin-top:0;
-      font-weight:500;
+      font-weight:700;
     }
   </style>
 </head>
@@ -560,6 +576,7 @@
   </section>
 
   <section class="scene hidden final" id="scene3">
+    <canvas class="fireworks" id="fireworksCanvas"></canvas>
     <div class="scene-3-wrap">
       <div class="final-stack">
         <div class="name-line" id="nameLine">
@@ -591,6 +608,17 @@
     const digits2026 = document.getElementById('digits2026');
 
     const captionEl = document.getElementById('captionText');
+
+    const fireworksCanvas = document.getElementById('fireworksCanvas');
+    const fireworksCtx = fireworksCanvas ? fireworksCanvas.getContext('2d') : null;
+    let fireworksRunning = false;
+    let fireworksTimer = null;
+    let fireworksFrame = null;
+    let fireworkParticles = [];
+    let audioCtx = null;
+    let fireworksBounds = { w: 0, h: 0, dpr: 1 };
+
+    const fireworkColors = ['#fbbf24','#f97316','#fb7185','#a78bfa','#22d3ee','#34d399','#f472b6'];
 
     const wishButtons = Array.from(document.querySelectorAll('.wish-item'));
     const allButton = document.querySelector('.is-all');
@@ -808,6 +836,7 @@ function makeWordSpan(text, mode, index, jitterScale = 0){
 
     document.getElementById('goScene3').addEventListener('click', () => {
       nameHint.textContent = '';
+      prepareAudio();
       submitWishSelection();
       transitionTo(sceneMessage);
       setTimeout(() => {
@@ -851,9 +880,122 @@ function makeWordSpan(text, mode, index, jitterScale = 0){
         if(captionEl){
           captionEl.classList.add('show');
         }
+        startFireworks();
       }, 4300);
     }
-  
+
+    function prepareAudio(){
+      if(!audioCtx){
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if(AudioContext){
+          audioCtx = new AudioContext();
+        }
+      }
+      if(audioCtx && audioCtx.state === 'suspended'){
+        audioCtx.resume();
+      }
+    }
+
+    function playFireworkPop(){
+      if(!audioCtx){
+        return;
+      }
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(120 + Math.random() * 240, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.08 + Math.random() * 0.06, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.26);
+    }
+
+    function resizeFireworks(){
+      if(!fireworksCanvas){
+        return;
+      }
+      const dpr = window.devicePixelRatio || 1;
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      fireworksBounds = { w: width, h: height, dpr };
+      fireworksCanvas.width = Math.round(width * dpr);
+      fireworksCanvas.height = Math.round(height * dpr);
+      fireworksCanvas.style.width = `${width}px`;
+      fireworksCanvas.style.height = `${height}px`;
+      if(fireworksCtx){
+        fireworksCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+    }
+
+    function launchFirework(){
+      if(!fireworksCtx){
+        return;
+      }
+      const width = fireworksBounds.w || window.innerWidth;
+      const height = fireworksBounds.h || window.innerHeight;
+      const x = width * (0.1 + Math.random() * 0.8);
+      const y = height * (0.1 + Math.random() * 0.35);
+      const count = 28 + Math.floor(Math.random() * 22);
+      const color = fireworkColors[Math.floor(Math.random() * fireworkColors.length)];
+      for(let i = 0; i < count; i++){
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 1.6 + Math.random() * 2.8;
+        fireworkParticles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 0,
+          ttl: 36 + Math.random() * 22,
+          color
+        });
+      }
+      playFireworkPop();
+    }
+
+    function animateFireworks(){
+      if(!fireworksRunning || !fireworksCtx){
+        return;
+      }
+      const width = fireworksBounds.w || window.innerWidth;
+      const height = fireworksBounds.h || window.innerHeight;
+      fireworksCtx.clearRect(0, 0, width, height);
+      fireworksCtx.globalCompositeOperation = 'lighter';
+      fireworkParticles = fireworkParticles.filter(p => {
+        p.life += 1;
+        p.vx *= 0.98;
+        p.vy = p.vy * 0.98 + 0.04;
+        p.x += p.vx;
+        p.y += p.vy;
+        const lifeRatio = 1 - p.life / p.ttl;
+        if(lifeRatio <= 0){
+          return false;
+        }
+        fireworksCtx.fillStyle = `${p.color}${Math.floor(lifeRatio * 255).toString(16).padStart(2, '0')}`;
+        fireworksCtx.beginPath();
+        fireworksCtx.arc(p.x, p.y, 2.2, 0, Math.PI * 2);
+        fireworksCtx.fill();
+        return true;
+      });
+      fireworksCtx.globalCompositeOperation = 'source-over';
+      fireworksFrame = requestAnimationFrame(animateFireworks);
+    }
+
+    function startFireworks(){
+      if(fireworksRunning || !fireworksCanvas || !fireworksCtx){
+        return;
+      }
+      fireworksRunning = true;
+      fireworksCanvas.classList.add('show');
+      resizeFireworks();
+      window.addEventListener('resize', resizeFireworks);
+      launchFirework();
+      fireworksTimer = setInterval(launchFirework, 900);
+      animateFireworks();
+    }
     function submitWishSelection(){
       if(hasSubmitted){
         return;
@@ -873,6 +1015,12 @@ function makeWordSpan(text, mode, index, jitterScale = 0){
       }).catch(() => {});
     }
   </script>
+
+
+
+
+
+
 
 
 
